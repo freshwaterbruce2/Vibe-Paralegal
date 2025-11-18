@@ -1,7 +1,7 @@
 <main class="bg-gray-900 text-gray-200 font-sans flex h-screen antialiased">
 
   <!-- Left Panel: Navigation -->
-  <aside class="w-64 flex-shrink-0 flex flex-col p-4 bg-gray-950/70 border-r border-gray-800">
+  <aside class="w-64 flex-shrink-0 flex flex-col p-4 bg-gray-950/70 border-r border-gray-800 overflow-y-auto">
     <header class="mb-8 p-2">
       <h1 class="text-xl font-bold text-white text-center">
         BRUCE'S WALMART CASE TRACKING SYSTEM
@@ -10,6 +10,14 @@
     </header>
 
     <nav class="flex flex-col space-y-2">
+      <button (click)="setActiveTab('details')" [class.bg-blue-600/20]="activeTab() === 'details'" [class.text-blue-300]="activeTab() === 'details'" [class.hover:bg-gray-800/60]="activeTab() !== 'details'" class="flex items-center px-4 py-2 rounded-md text-gray-300 transition-colors duration-200 w-full text-left">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" viewBox="0 0 20 20" fill="currentColor"><path d="M10 2a4 4 0 00-4 4v1H5a1 1 0 00-.993.883L4 8v9a1 1 0 001 1h10a1 1 0 001-1V8l-.007-.117A1 1 0 0015 7h-1V6a4 4 0 00-4-4zm2 5H8V6a2 2 0 114 0v1z" /></svg>
+        Case Details
+      </button>
+      <button (click)="setActiveTab('documents')" [class.bg-blue-600/20]="activeTab() === 'documents'" [class.text-blue-300]="activeTab() === 'documents'" [class.hover:bg-gray-800/60]="activeTab() !== 'documents'" class="flex items-center px-4 py-2 rounded-md text-gray-300 transition-colors duration-200 w-full text-left">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd" /></svg>
+        Documents
+      </button>
        <button (click)="setActiveTab('chat')" [class.bg-blue-600/20]="activeTab() === 'chat'" [class.text-blue-300]="activeTab() === 'chat'" [class.hover:bg-gray-800/60]="activeTab() !== 'chat'" class="flex items-center px-4 py-2 rounded-md text-gray-300 transition-colors duration-200 w-full text-left">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.083-3.083A6.984 6.984 0 012 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM4.79 14.243A6.975 6.975 0 014 10c0-3.309 3.134-6 7-6s7 2.691 7 6-3.134 6-7 6a7.735 7.735 0 01-2.21-.336L4.79 14.243z" clip-rule="evenodd" /></svg>
         AI Paralegal
@@ -35,7 +43,7 @@
         Deadline Calendar
       </button>
        <button (click)="setActiveTab('damages')" [class.bg-blue-600/20]="activeTab() === 'damages'" [class.text-blue-300]="activeTab() === 'damages'" [class.hover:bg-gray-800/60]="activeTab() !== 'damages'" class="flex items-center px-4 py-2 rounded-md text-gray-300 transition-colors duration-200 w-full text-left">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" viewBox="0 0 20 20" fill="currentColor"><path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.5 2.5 0 00-1.134 0V7.418zM10 16.5a2.5 2.5 0 001.134 0v-1.698c-.155.103-.346.196-.567.267a.5.5 0 01-.567-.267v-1.698a2.5 2.5 0 00-1.134 0v1.698a.5.5 0 01.567.267c.22.07.412.164.567.267v1.698z" /><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm.5-14a.5.5 0 00-1 0V5a.5.5 0 001 0V4zM10 6.5A2.502 2.502 0 007.5 9v1.418a.5.5 0 01-.567.424c-.22.07-.412.164-.567.267a2.5 2.5 0 000 2.782c.155.103.347.196.567.267a.5.5 0 01.567.424V15.5a2.5 2.5 0 005 0v-1.418a.5.5 0 01.567-.424c.22-.07.412-.164.567-.267a2.5 2.5 0 000-2.782c-.155-.103-.347-.196-.567-.267a.5.5 0 01-.567-.424V9A2.502 2.502 0 0010 6.5zm0 1.5a1 1 0 100 2 1 1 0 000-2z" clip-rule="evenodd" /></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" viewBox="0 0 20 20" fill="currentColor"><path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.5 2.5 0 00-1.134 0V7.418zM10 16.5a2.5 2.5 0 001.134 0v-1.698c-.155.103-.346.196-.567.267a.5.5 0 01-.567-.267v-1.698a2.5 2.5 0 00-1.134 0v1.698a.5.5 0 01.567.267c.22.07.412.164.567.267v1.698z" /><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm.5-14a.5.5 0 00-1 0V5a.5.5 0 001 0V4zM10 6.5A2.502 2.502 0 007.5 9v1.418a.5.5 0 01-.567.424c-.22.07-.412.164-.567.267a2.5 2.5 0 000 2.782c.155.103.347.196.567.267a.5.5 0 01.567.424V15.5a2.5 2.5 0 005 0v-1.418a.5.5 0 01.567-.424c.22-.07.412.164-.567-.267a2.5 2.5 0 000-2.782c-.155-.103-.347-.196-.567-.267a.5.5 0 01-.567-.424V9A2.502 2.502 0 0010 6.5zm0 1.5a1 1 0 100 2 1 1 0 000-2z" clip-rule="evenodd" /></svg>
         Damage Calculator
       </button>
     </nav>
@@ -44,12 +52,110 @@
   <!-- Right Panel: Main Content -->
   <section class="flex-grow flex flex-col h-full bg-gray-800/50">
     @switch (activeTab()) {
+      @case ('details') {
+        <div class="p-8 overflow-y-auto">
+          <h2 class="text-3xl font-bold mb-6 text-gray-100">Core Case Details</h2>
+          <div class="space-y-6">
+            <!-- Identifiers -->
+            <div class="bg-gray-900/50 rounded-lg border border-gray-700 p-6">
+              <h3 class="text-lg font-semibold text-gray-300 mb-4">Case Identifiers</h3>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label class="text-sm text-gray-400">WIN</label>
+                  <input type="text" [value]="caseDetails().win" (input)="handleCaseDetailsInput('win', $event)" class="w-full mt-1 p-2 bg-gray-700 border border-gray-600 rounded-md">
+                </div>
+                <div>
+                  <label class="text-sm text-gray-400">Phone</label>
+                  <input type="text" [value]="caseDetails().phone" (input)="handleCaseDetailsInput('phone', $event)" class="w-full mt-1 p-2 bg-gray-700 border border-gray-600 rounded-md">
+                </div>
+              </div>
+            </div>
+            <!-- Claim Numbers -->
+            <div class="bg-gray-900/50 rounded-lg border border-gray-700 p-6">
+              <h3 class="text-lg font-semibold text-gray-300 mb-4">Claim Numbers</h3>
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label class="text-sm text-gray-400">Accommodation</label>
+                  <input type="text" [value]="caseDetails().accommodationClaim" (input)="handleCaseDetailsInput('accommodationClaim', $event)" class="w-full mt-1 p-2 bg-gray-700 border border-gray-600 rounded-md">
+                </div>
+                 <div>
+                  <label class="text-sm text-gray-400">Disability</label>
+                  <input type="text" [value]="caseDetails().disabilityClaim" (input)="handleCaseDetailsInput('disabilityClaim', $event)" class="w-full mt-1 p-2 bg-gray-700 border border-gray-600 rounded-md">
+                </div>
+                 <div>
+                  <label class="text-sm text-gray-400">Leave</label>
+                  <input type="text" [value]="caseDetails().leaveClaim" (input)="handleCaseDetailsInput('leaveClaim', $event)" class="w-full mt-1 p-2 bg-gray-700 border border-gray-600 rounded-md">
+                </div>
+              </div>
+            </div>
+            <!-- Critical Dates -->
+            <div class="bg-gray-900/50 rounded-lg border border-gray-700 p-6">
+              <h3 class="text-lg font-semibold text-gray-300 mb-4">Critical Dates</h3>
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                 <div><label class="text-sm text-gray-400">Injury</label><input type="text" [value]="caseDetails().injuryDate" (input)="handleCaseDetailsInput('injuryDate', $event)" class="w-full mt-1 p-2 bg-gray-700 border border-gray-600 rounded-md"></div>
+                 <div><label class="text-sm text-gray-400">Denial</label><input type="text" [value]="caseDetails().denialDate" (input)="handleCaseDetailsInput('denialDate', $event)" class="w-full mt-1 p-2 bg-gray-700 border border-gray-600 rounded-md"></div>
+                 <div><label class="text-sm text-gray-400">Approval</label><input type="text" [value]="caseDetails().approvalDate" (input)="handleCaseDetailsInput('approvalDate', $event)" class="w-full mt-1 p-2 bg-gray-700 border border-gray-600 rounded-md"></div>
+                 <div><label class="text-sm text-gray-400">Insurance Stop</label><input type="text" [value]="caseDetails().insuranceStopDate" (input)="handleCaseDetailsInput('insuranceStopDate', $event)" class="w-full mt-1 p-2 bg-gray-700 border border-gray-600 rounded-md"></div>
+                 <div><label class="text-sm text-gray-400">Cleared to Work</label><input type="text" [value]="caseDetails().clearedToWorkDate" (input)="handleCaseDetailsInput('clearedToWorkDate', $event)" class="w-full mt-1 p-2 bg-gray-700 border border-gray-600 rounded-md"></div>
+                 <div><label class="text-sm text-gray-400">Accom. Deadline</label><input type="text" [value]="caseDetails().accommodationDeadline" (input)="handleCaseDetailsInput('accommodationDeadline', $event)" class="w-full mt-1 p-2 bg-gray-700 border border-gray-600 rounded-md"></div>
+                 <div class="col-span-2"><label class="text-sm font-bold text-red-400">EEOC Deadline</label><input type="text" [value]="caseDetails().eeocDeadline" (input)="handleCaseDetailsInput('eeocDeadline', $event)" class="w-full mt-1 p-2 bg-red-900/50 border border-red-700 rounded-md"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+      @case ('documents') {
+        <div class="p-8 flex flex-col h-full overflow-hidden">
+          <header class="flex-shrink-0 mb-6 flex items-center justify-between">
+            <h2 class="text-3xl font-bold text-gray-100">Case Documents</h2>
+            <label class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-500 cursor-pointer">
+              <span>Add Document</span>
+              <input type="file" class="hidden" (change)="handleDocumentUpload($event)" accept=".txt,.md,.pdf,.doc,.docx">
+            </label>
+          </header>
+          
+          @if (selectedDocument() === null) {
+            <div class="flex-shrink-0 mb-4">
+              <input 
+                type="search" 
+                placeholder="Search documents by name or content..." 
+                class="w-full p-3 bg-gray-700 border border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                [value]="documentSearchQuery()"
+                (input)="handleSearchInput($event)">
+            </div>
+            <div class="flex-grow overflow-y-auto pr-2">
+              <ul class="space-y-2">
+                @for (doc of filteredDocuments(); track doc.id) {
+                  <li (click)="selectDocument(doc)" class="bg-gray-900/50 p-4 rounded-md border border-gray-700 hover:border-blue-500 cursor-pointer transition-colors duration-200">
+                    <p class="font-semibold text-blue-300">{{ doc.name }}</p>
+                    <p class="text-xs text-gray-400">Uploaded: {{ doc.uploaded }}</p>
+                  </li>
+                } @empty {
+                  <div class="text-center py-12 border-2 border-dashed border-gray-700 rounded-lg">
+                    <p class="text-gray-400">No documents found.</p>
+                    <p class="text-sm text-gray-500">Add a document to get started.</p>
+                  </div>
+                }
+              </ul>
+            </div>
+          } @else {
+            <div class="flex-grow flex flex-col bg-gray-900/50 rounded-lg border border-gray-700 overflow-hidden">
+              <header class="flex-shrink-0 p-4 bg-gray-950/70 flex items-center justify-between border-b border-gray-700">
+                <h3 class="font-semibold text-lg">{{ selectedDocument()?.name }}</h3>
+                <button (click)="selectDocument(null)" class="text-gray-400 hover:text-white">&times;</button>
+              </header>
+              <div class="flex-grow p-6 overflow-y-auto prose prose-invert max-w-none prose-sm" [innerHTML]="getHighlightedContent(selectedDocument()!.content)">
+              </div>
+            </div>
+          }
+        </div>
+      }
       @case ('chat') {
         <div #chatContainer class="flex-grow p-6 overflow-y-auto">
           <div class="flex flex-col space-y-4">
             @for (message of messages(); track $index) {
               <div class="flex" [class.justify-end]="message.role === 'user'" [class.justify-start]="message.role === 'model'">
-                <div class="max-w-2xl px-4 py-3 rounded-xl" [class.bg-blue-600]="message.role === 'user'" [class.bg-gray-700]="message.role === 'model'">
+                <div class="max-w-3xl px-4 py-3 rounded-xl" [class.bg-blue-600]="message.role === 'user'" [class.bg-gray-700]="message.role === 'model'">
                   @if (message.role === 'model') {
                     <div class="prose prose-sm max-w-none prose-invert" [innerHTML]="formatMessageText(message.text)"></div>
                   } @else {
@@ -60,7 +166,7 @@
             }
             @if (loading() && messages()[messages().length - 1]?.text === '') {
               <div class="flex justify-start">
-                 <div class="max-w-2xl px-4 py-3 rounded-xl bg-gray-700 flex items-center space-x-2">
+                 <div class="max-w-3xl px-4 py-3 rounded-xl bg-gray-700 flex items-center space-x-2">
                     <div class="w-2 h-2 bg-gray-400 rounded-full animate-pulse [animation-delay:-0.3s]"></div>
                     <div class="w-2 h-2 bg-gray-400 rounded-full animate-pulse [animation-delay:-0.15s]"></div>
                     <div class="w-2 h-2 bg-gray-400 rounded-full animate-pulse"></div>
@@ -86,7 +192,7 @@
               rows="1"
               [value]="chatPrompt()"
               (input)="handlePromptInput($event)"
-              (keydown.enter)="$event.preventDefault(); sendMessage()"
+              (keydown.enter)="handleKeydownEnter($event)"
               [disabled]="loading()"
             ></textarea>
             <button
@@ -117,11 +223,11 @@
         <div class="p-8 overflow-y-auto">
           <h2 class="text-3xl font-bold mb-6 text-gray-100">Master Timeline</h2>
            <div class="bg-gray-900/50 rounded-lg border border-gray-700 p-6">
-              <div class="prose prose-invert max-w-none">
+              <div class="prose prose-invert max-w-none mb-4">
                 <p>This is the master source of truth for your case. It contains every key date and event. The AI Paralegal uses this as its primary context. You can edit it below.</p>
               </div>
               <textarea 
-                  class="w-full h-96 mt-4 p-3 bg-gray-950/50 border border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none resize-y text-gray-300 placeholder-gray-500"
+                  class="w-full h-[60vh] p-3 bg-gray-950/50 border border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none resize-y text-gray-300 placeholder-gray-500 font-mono"
                   [value]="masterTimeline()"
                   (input)="handleTimelineInput($event)"
               ></textarea>
@@ -130,36 +236,16 @@
       }
       @case ('actions') {
          <div class="p-8 overflow-y-auto">
-          <h2 class="text-3xl font-bold mb-6 text-gray-100">Daily Action Tracker</h2>
+          <h2 class="text-3xl font-bold mb-6 text-gray-100">Action Tracker</h2>
             <div class="bg-gray-900/50 rounded-lg border border-gray-700 p-6 prose prose-invert max-w-none">
-                <h3 class="text-lg font-semibold text-gray-300">DATE: November 16, 2025 (Saturday)</h3>
-                
-                <h4 class="font-bold mt-4">MUST DO TODAY:</h4>
-                <ul class="space-y-2">
-                    <li><input type="checkbox" class="mr-2">Meet with Christina about religious accommodation</li>
-                    <li><input type="checkbox" class="mr-2">Ask about accommodation case status (open vs closed?)</li>
-                    <li><input type="checkbox" class="mr-2">Get case closure in WRITING if they say it's closed</li>
-                    <li><input type="checkbox" class="mr-2">Document everything Christina says</li>
-                    <li><input type="checkbox" class="mr-2">Note any physical issues with work</li>
-                    <li><input type="checkbox" class="mr-2">Ask about insurance premium deductions</li>
-                </ul>
-
-                <h4 class="font-bold mt-6">QUESTIONS TO ASK:</h4>
-                <ol class="list-decimal list-inside space-y-1">
-                    <li>"Case C5830D8173-0001-01 - Sedgwick says open until 11/22, you say closed. Which is it?"</li>
-                    <li>"Religious accommodation - what's the timeline for decision?"</li>
-                    <li>"My insurance was terminated June 30 during FMLA. Why? How will you fix it?"</li>
-                    <li>"Is this position permanent or temporary?"</li>
-                    <li>"Same physical requirements as before?"</li>
-                </ol>
-
-                <h4 class="font-bold mt-6">DOCUMENT AFTER:</h4>
-                 <ul class="list-disc list-inside space-y-1">
-                    <li>Who I met with</li>
-                    <li>What they said (exact words if possible)</li>
-                    <li>Any commitments made</li>
-                    <li>How my back felt during work</li>
-                    <li>Follow-up needed</li>
+                <h3 class="text-lg font-semibold text-gray-300">MUST DO TODAY:</h3>
+                <ul class="space-y-3 mt-4">
+                    @for (item of actionTracker(); track item.id) {
+                      <li class="flex items-center">
+                        <input type="checkbox" [id]="'action-' + item.id" [checked]="item.checked" (change)="toggleActionTrackerItem(item.id)" class="h-5 w-5 rounded bg-gray-700 border-gray-500 text-blue-500 focus:ring-blue-600">
+                        <label [for]="'action-' + item.id" class="ml-3 text-gray-300 cursor-pointer" [class.line-through]="item.checked" [class.text-gray-500]="item.checked">{{ item.text }}</label>
+                      </li>
+                    }
                 </ul>
             </div>
         </div>
@@ -170,26 +256,24 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="bg-gray-900/50 rounded-lg border border-gray-700 p-6 prose prose-invert max-w-none">
                     <h3 class="text-lg font-semibold text-green-400">HAVE:</h3>
-                    <ul class="space-y-2 mt-4">
-                        <li><input type="checkbox" checked class="mr-2">July 14 accommodation denial letter (CRITICAL)</li>
-                        <li><input type="checkbox" checked class="mr-2">August 19 accommodation approval letter</li>
-                        <li><input type="checkbox" checked class="mr-2">All Sedgwick letters (July-October)</li>
-                        <li><input type="checkbox" checked class="mr-2">Medical records from Colonial Healthcare</li>
-                        <li><input type="checkbox" checked class="mr-2">Dr. Becksvoort notes and restrictions</li>
-                        <li><input type="checkbox" checked class="mr-2">X-ray results (degenerative disc disease)</li>
-                        <li><input type="checkbox" checked class="mr-2">September 5 STD payment stub (no insurance deduction)</li>
-                        <li><input type="checkbox" checked class="mr-2">November 15 email to Christina/Tichala</li>
+                    <ul class="space-y-3 mt-4">
+                      @for (item of evidenceHave(); track item.id) {
+                        <li class="flex items-center">
+                          <input type="checkbox" [id]="'have-' + item.id" [checked]="item.checked" (change)="toggleEvidenceHaveItem(item.id)" class="h-5 w-5 rounded bg-gray-700 border-gray-500 text-blue-500 focus:ring-blue-600">
+                          <label [for]="'have-' + item.id" class="ml-3 text-gray-300 cursor-pointer" [class.line-through]="item.checked" [class.text-gray-500]="item.checked">{{ item.text }}</label>
+                        </li>
+                      }
                     </ul>
                 </div>
                  <div class="bg-gray-900/50 rounded-lg border border-gray-700 p-6 prose prose-invert max-w-none">
                     <h3 class="text-lg font-semibold text-yellow-400">NEED TO GET:</h3>
-                    <ul class="space-y-2 mt-4">
-                        <li><input type="checkbox" class="mr-2">Blue Cross Blue Shield termination date (exact)</li>
-                        <li><input type="checkbox" class="mr-2">Blue Cross denial of reinstatement (in writing)</li>
-                        <li><input type="checkbox" class="mr-2">All STD payment stubs May-October (check for premium deductions)</li>
-                        <li><input type="checkbox" class="mr-2">Private insurance policy and premium amounts</li>
-                        <li><input type="checkbox" class="mr-2">Accommodation case closure letter (if they say it's closed)</li>
-                        <li><input type="checkbox" class="mr-2">Religious accommodation decision (when made)</li>
+                    <ul class="space-y-3 mt-4">
+                       @for (item of evidenceNeed(); track item.id) {
+                        <li class="flex items-center">
+                          <input type="checkbox" [id]="'need-' + item.id" [checked]="item.checked" (change)="toggleEvidenceNeedItem(item.id)" class="h-5 w-5 rounded bg-gray-700 border-gray-500 text-blue-500 focus:ring-blue-600">
+                          <label [for]="'need-' + item.id" class="ml-3 text-gray-300 cursor-pointer" [class.line-through]="item.checked" [class.text-gray-500]="item.checked">{{ item.text }}</label>
+                        </li>
+                      }
                     </ul>
                 </div>
             </div>
@@ -199,35 +283,29 @@
         <div class="p-8 overflow-y-auto">
           <h2 class="text-3xl font-bold mb-6 text-gray-100">Contact Log</h2>
           <div class="space-y-6">
-            <div class="bg-gray-900/50 rounded-lg border border-gray-700 p-6 prose prose-invert max-w-none">
-              <p class="text-sm text-gray-400">DATE: November 15, 2025 (evening) | PERSON: T'Challa (Walmart HR) | METHOD: Phone call</p>
-              <h4 class="font-bold mt-2">WHAT THEY SAID:</h4>
-              <ul class="list-disc list-inside">
-                <li>Come in Saturday 11/16</li>
-                <li>Same position (Imports Loader)</li>
-                <li>Same pay ($26.40/hour)</li>
-                <li>Accommodation case CLOSED</li>
-                <li>Religious accommodation through Christina</li>
-              </ul>
-              <h4 class="font-bold mt-2">FOLLOW-UP NEEDED:</h4>
-              <ul class="list-disc list-inside">
-                <li>Get case closure in writing</li>
-                <li>Clarify with Sedgwick about open vs closed</li>
-              </ul>
-            </div>
-             <div class="bg-gray-900/50 rounded-lg border border-gray-700 p-6 prose prose-invert max-w-none">
-              <p class="text-sm text-gray-400">DATE: November 15, 2025 (day) | PERSON: Sedgwick rep | METHOD: Phone call</p>
-              <h4 class="font-bold mt-2">WHAT THEY SAID:</h4>
-              <ul class="list-disc list-inside">
-                 <li>Case C5830D8173-0001-01 STILL OPEN</li>
-                 <li>Deadline November 22, 2025</li>
-                 <li>Case active through deadline</li>
-              </ul>
-               <div class="mt-4 border-l-4 border-red-500 pl-4">
-                <p class="font-semibold text-red-400">DISCREPANCY NOTED:</p>
-                <p class="text-gray-300">T'Challa says closed, Sedgwick says open. There is a 6-day gap to the deadline.</p>
-               </div>
-            </div>
+            @for (log of contactLog(); track log.date) {
+              <div class="bg-gray-900/50 rounded-lg border border-gray-700 p-6 prose prose-invert max-w-none">
+                <p class="text-sm text-gray-400">{{ log.date }} | PERSON: {{ log.person }} | METHOD: {{ log.method }}</p>
+                @if (log.said.length > 0) {
+                  <h4 class="font-bold mt-2">WHAT THEY SAID:</h4>
+                  <ul class="list-disc list-inside">
+                    @for(item of log.said; track item){ <li>{{item}}</li> }
+                  </ul>
+                }
+                @if (log.followUp.length > 0) {
+                  <h4 class="font-bold mt-2">FOLLOW-UP NEEDED:</h4>
+                  <ul class="list-disc list-inside">
+                    @for(item of log.followUp; track item){ <li>{{item}}</li> }
+                  </ul>
+                }
+                @if (log.discrepancy) {
+                  <div class="mt-4 border-l-4 border-red-500 pl-4">
+                    <p class="font-semibold text-red-400">{{ log.discrepancy.title }}:</p>
+                    <p class="text-gray-300">{{ log.discrepancy.detail }}</p>
+                  </div>
+                }
+              </div>
+            }
           </div>
         </div>
       }
@@ -245,36 +323,21 @@
                 </tr>
               </thead>
               <tbody class="divide-y divide-gray-700">
-                <tr>
-                  <td class="p-4 font-bold text-yellow-300">Nov 16, 2025</td>
-                  <td class="p-4">Meet Christina</td>
-                  <td class="p-4">Ask questions, document everything</td>
-                  <td class="p-4"><span class="px-2 py-1 text-xs font-semibold bg-yellow-500/20 text-yellow-300 rounded-full">TODAY</span></td>
-                </tr>
-                <tr>
-                  <td class="p-4">Nov 18, 2025</td>
-                  <td class="p-4">Monday follow-up</td>
-                  <td class="p-4">Call Blue Cross, call Sedgwick if needed</td>
-                  <td class="p-4"><span class="px-2 py-1 text-xs font-semibold bg-gray-600/50 text-gray-300 rounded-full">Pending</span></td>
-                </tr>
-                <tr>
-                  <td class="p-4">Nov 22, 2025</td>
-                  <td class="p-4">Accommodation deadline</td>
-                  <td class="p-4">Monitor for communication</td>
-                  <td class="p-4"><span class="px-2 py-1 text-xs font-semibold bg-gray-600/50 text-gray-300 rounded-full">Pending</span></td>
-                </tr>
-                <tr>
-                  <td class="p-4">Dec 16, 2025</td>
-                  <td class="p-4">30 days from return</td>
-                  <td class="p-4">Check religious accommodation status</td>
-                  <td class="p-4"><span class="px-2 py-1 text-xs font-semibold bg-gray-700 text-gray-400 rounded-full">Future</span></td>
-                </tr>
-                 <tr class="border-t-2 border-red-500/50">
-                  <td class="p-4 font-bold text-red-400">May 10, 2026</td>
-                  <td class="p-4 font-semibold">EEOC deadline</td>
-                  <td class="p-4">300 days from July 14 denial</td>
-                  <td class="p-4"><span class="px-2 py-1 text-xs font-semibold bg-red-500/20 text-red-300 rounded-full">CRITICAL</span></td>
-                </tr>
+                @for (deadline of deadlineCalendar(); track deadline.date) {
+                  <tr [class.border-t-2]="deadline.isCritical" [class.border-red-500/50]="deadline.isCritical">
+                    <td class="p-4 font-bold" [class.text-yellow-300]="deadline.status === 'TODAY'" [class.text-red-400]="deadline.status === 'CRITICAL'">{{ deadline.date }}</td>
+                    <td class="p-4" [class.font-semibold]="deadline.isCritical">{{ deadline.what }}</td>
+                    <td class="p-4">{{ deadline.action }}</td>
+                    <td class="p-4">
+                      @switch(deadline.status) {
+                        @case('TODAY') { <span class="px-2 py-1 text-xs font-semibold bg-yellow-500/20 text-yellow-300 rounded-full">TODAY</span> }
+                        @case('Pending') { <span class="px-2 py-1 text-xs font-semibold bg-gray-600/50 text-gray-300 rounded-full">Pending</span> }
+                        @case('Future') { <span class="px-2 py-1 text-xs font-semibold bg-gray-700 text-gray-400 rounded-full">Future</span> }
+                        @case('CRITICAL') { <span class="px-2 py-1 text-xs font-semibold bg-red-500/20 text-red-300 rounded-full">CRITICAL</span> }
+                      }
+                    </td>
+                  </tr>
+                }
               </tbody>
             </table>
           </div>
@@ -285,24 +348,33 @@
           <h2 class="text-3xl font-bold mb-6 text-gray-100">Damage Calculator (Running Total)</h2>
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <div class="bg-gray-900/50 rounded-lg border border-gray-700 p-6">
-                <h3 class="text-lg font-semibold text-gray-300">Lost Wages</h3>
-                <p class="text-sm text-gray-400">$26.40/hr × 40 hrs/wk = $1,056/week</p>
-                <p class="text-4xl font-bold text-green-400 mt-4">$18,900 <span class="text-lg font-normal text-gray-400">(~18 weeks)</span></p>
+                <label for="lostWages" class="text-lg font-semibold text-gray-300">Lost Wages</label>
+                <p class="text-sm text-gray-400 mb-4">$26.40/hr × 40 hrs/wk = $1,056/week</p>
+                <div class="flex items-center">
+                    <span class="text-2xl text-gray-400 mr-2">$</span>
+                    <input id="lostWages" type="number" step="100" class="w-full bg-transparent text-4xl font-bold text-green-400 outline-none" [value]="damageCalculator().lostWages" (input)="handleDamageInput('lostWages', $event)">
+                </div>
             </div>
              <div class="bg-gray-900/50 rounded-lg border border-gray-700 p-6">
-                <h3 class="text-lg font-semibold text-gray-300">Insurance Costs</h3>
-                 <p class="text-sm text-gray-400">Private insurance premium payments</p>
-                 <p class="text-4xl font-bold text-yellow-400 mt-4">$2,500 <span class="text-lg font-normal text-gray-400">(estimate)</span></p>
+                <label for="insuranceCosts" class="text-lg font-semibold text-gray-300">Insurance Costs</label>
+                 <p class="text-sm text-gray-400 mb-4">Private insurance premium payments</p>
+                 <div class="flex items-center">
+                    <span class="text-2xl text-gray-400 mr-2">$</span>
+                    <input id="insuranceCosts" type="number" step="50" class="w-full bg-transparent text-4xl font-bold text-yellow-400 outline-none" [value]="damageCalculator().insuranceCosts" (input)="handleDamageInput('insuranceCosts', $event)">
+                 </div>
             </div>
              <div class="bg-gray-900/50 rounded-lg border border-gray-700 p-6">
-                <h3 class="text-lg font-semibold text-gray-300">Medical Expenses</h3>
-                 <p class="text-sm text-gray-400">Costs incurred while uninsured</p>
-                 <p class="text-4xl font-bold text-orange-400 mt-4">$850 <span class="text-lg font-normal text-gray-400">(visits, meds)</span></p>
+                <label for="medicalExpenses" class="text-lg font-semibold text-gray-300">Medical Expenses</label>
+                 <p class="text-sm text-gray-400 mb-4">Costs incurred while uninsured</p>
+                 <div class="flex items-center">
+                     <span class="text-2xl text-gray-400 mr-2">$</span>
+                     <input id="medicalExpenses" type="number" step="50" class="w-full bg-transparent text-4xl font-bold text-orange-400 outline-none" [value]="damageCalculator().medicalExpenses" (input)="handleDamageInput('medicalExpenses', $event)">
+                 </div>
             </div>
           </div>
            <div class="mt-8 bg-gray-950/80 rounded-lg border-2 border-blue-500 p-6 flex items-center justify-between">
               <h3 class="text-2xl font-bold text-gray-100">Grand Total Damages:</h3>
-              <p class="text-5xl font-bold text-blue-300">$22,250</p>
+              <p class="text-5xl font-bold text-blue-300">{{ totalDamages() | number:'1.2-2' }}</p>
            </div>
         </div>
       }
