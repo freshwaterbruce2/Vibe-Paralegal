@@ -116,8 +116,4 @@ export class ChatComponent implements AfterViewChecked {
       this.shouldScrollToBottom = true;
     }
   }
-
-  formatMessageText(text: string): string {
-    return text.replace(/\n/g, '<br>');
-  }
 }

@@ -4,7 +4,7 @@ export interface Toast {
   id: number;
   title: string;
   message: string;
-  type: 'info' | 'success';
+  type: 'info' | 'success' | 'error';
 }
 
 @Injectable({ providedIn: 'root' })
@@ -30,16 +30,16 @@ export class NotificationService {
     console.log("Body:", body);
     console.log("------------------------------------");
 
-    this.addToast(`Email alert sent to ${userEmail}`, subject, 'info');
+    this.addToast(subject, `Email alert sent to ${userEmail}`, 'info');
   }
 
   /**
    * Adds a toast message to the UI.
-   * @param message The main message of the toast.
    * @param title The title of the toast.
+   * @param message The main message of the toast.
    * @param type The type of toast.
    */
-  private addToast(message: string, title: string, type: 'info' | 'success') {
+  addToast(title: string, message: string, type: 'info' | 'success' | 'error') {
     const id = this.nextId++;
     const newToast: Toast = { id, title, message, type };
     

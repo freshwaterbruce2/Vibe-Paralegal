@@ -2,8 +2,8 @@
   <header class="flex-shrink-0 mb-6 flex items-center justify-between">
     <h2 class="text-3xl font-bold text-gray-100">Case Documents</h2>
     <label class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-500 cursor-pointer">
-      <span>Add Document</span>
-      <input type="file" class="hidden" (change)="handleDocumentUpload($event)" accept=".txt,.md,.pdf,.doc,.docx">
+      <span>Import Case Files</span>
+      <input type="file" class="hidden" (change)="handleDocumentUpload($event)" accept=".txt,.md" multiple>
     </label>
   </header>
   
@@ -26,7 +26,7 @@
         } @empty {
           <div class="text-center py-12 border-2 border-dashed border-gray-700 rounded-lg">
             <p class="text-gray-400">No documents found.</p>
-            <p class="text-sm text-gray-500">Add a document to get started.</p>
+            <p class="text-sm text-gray-500">Import a document to get started.</p>
           </div>
         }
       </ul>
