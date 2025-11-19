@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, signal, WritableSignal, ElementRef, ViewChild, AfterViewChecked, computed, Signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { GeminiService } from './services/gemini.service';
+import { AiService } from './services/gemini.service';
 
 // --- DATA INTERFACES ---
 interface Message {
@@ -85,7 +85,7 @@ type ActiveTab = 'details' | 'documents' | 'chat' | 'timeline' | 'actions' | 'ev
 export class AppComponent implements AfterViewChecked {
   @ViewChild('chatContainer') private chatContainer!: ElementRef;
 
-  geminiService = inject(GeminiService);
+  aiService = inject(AiService);
   
   // --- STATE SIGNALS ---
   activeTab: WritableSignal<ActiveTab> = signal('details');
@@ -270,7 +270,7 @@ export class AppComponent implements AfterViewChecked {
 
     try {
       const fullContext = this.getFullContext();
-      const responseText = await this.geminiService.analyzeViolations(fullContext);
+      const responseText = await this.aiService.analyzeViolations(fullContext);
       const cleanedJson = responseText.replace(/^```json\n?/, '').replace(/\n?```$/, '');
       const alerts: ViolationAlert[] = JSON.parse(cleanedJson);
       this.violationAlerts.set(alerts);
@@ -337,7 +337,7 @@ ${documentContext}
 
     try {
       const fullContext = this.getFullContext();
-      const stream = await this.geminiService.sendMessageStream(fullContext, prompt);
+      const stream = await this.aiService.sendMessageStream(fullContext, prompt);
 
       for await (const chunk of stream) {
         const chunkText = chunk.text;

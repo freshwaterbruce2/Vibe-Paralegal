@@ -1,13 +1,14 @@
 import { Injectable } from '@angular/core';
-import { GoogleGenAI, Chat, Type } from '@google/genai';
 
 // The Applet environment provides process.env.API_KEY.
 declare const process: any;
 
+const API_URL = 'https://api.deepseek.com/v1/chat/completions';
+const MODEL_NAME = 'deepseek-chat';
+
 @Injectable({ providedIn: 'root' })
-export class GeminiService {
-  private genAI: GoogleGenAI | null = null;
-  private chat: Chat | null = null;
+export class AiService {
+  private apiKey = '';
   private isInitialized = false;
 
   constructor() {
@@ -17,77 +18,74 @@ export class GeminiService {
   private initialize() {
     try {
       if (process && process.env && process.env.API_KEY) {
-        this.genAI = new GoogleGenAI({ apiKey: process.env.API_KEY });
-        this.startChat();
+        this.apiKey = process.env.API_KEY;
         this.isInitialized = true;
       } else {
         console.error("API_KEY environment variable not set.");
       }
     } catch (e) {
-      console.error("Failed to initialize Gemini Service", e);
+      console.error("Failed to initialize AiService", e);
     }
-  }
-
-  private startChat() {
-    if(!this.genAI) return;
-    this.chat = this.genAI.chats.create({
-      model: 'gemini-2.5-flash',
-      config: {
-        systemInstruction: `You are an expert paralegal specializing in South Carolina employment law, with deep knowledge of Walmart policies (like IDC 8980) and Sedgwick insurance policies. You will be provided with a complete case file, including core details, a master timeline, the full text of relevant documents, action trackers, and damage calculations. Your task is to analyze this comprehensive data to identify potential legal and policy violations and to suggest actionable steps. Always cite specific laws, policy sections, or document names when possible. Be professional, objective, and informative. Structure your responses clearly using markdown for readability.`
-      }
-    });
   }
 
   async analyzeViolations(context: string): Promise<string> {
-    if (!this.isInitialized || !this.genAI) {
-      throw new Error('Gemini Service is not initialized. Please check your API Key.');
+    if (!this.isInitialized) {
+      throw new Error('AI Service is not initialized. Please check your API Key.');
     }
 
-    const fullPrompt = `
-      You are an expert paralegal specializing in South Carolina employment law, Walmart policies, and Sedgwick policies.
-      Based on the complete case file provided below, analyze for any potential violations.
-      Identify each potential violation and provide a detailed explanation, severity, supporting references from the case file or law/policy, and recommended next actions.
-      Strictly structure your response as a JSON array of objects, adhering to the provided schema. If no violations are found, return an empty array [].
+    const systemPrompt = `You are an expert paralegal specializing in South Carolina employment law, Walmart policies, and Sedgwick policies.
+Analyze the provided case file for potential violations.
+Identify each potential violation and provide a detailed explanation, severity, supporting references, and recommended actions.
+You must respond with a valid JSON array of objects. Each object must have the following properties: "title", "explanation", "severity", "references", and "recommendations".
+If no violations are found, return an empty array [].`;
 
+    const userPrompt = `
       ---
       CASE CONTEXT (FULL FILE):
       ${context}
       ---
     `;
 
-    const schema = {
-      type: Type.ARRAY,
-      items: {
-        type: Type.OBJECT,
-        properties: {
-          title: { type: Type.STRING, description: 'A short, clear title for the potential violation.' },
-          explanation: { type: Type.STRING, description: 'A detailed explanation of the potential violation, citing facts from the case file.' },
-          severity: { type: Type.STRING, description: 'The estimated severity of the violation. Can be "High", "Medium", or "Low".' },
-          references: { type: Type.ARRAY, items: { type: Type.STRING }, description: 'A list of specific laws, policy numbers, or document names that support this finding.' },
-          recommendations: { type: Type.ARRAY, items: { type: Type.STRING }, description: 'A list of concrete, actionable next steps to address this potential violation.' },
+    try {
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${this.apiKey}`,
         },
-        required: ['title', 'explanation', 'severity', 'references', 'recommendations'],
-      },
-    };
+        body: JSON.stringify({
+          model: MODEL_NAME,
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: userPrompt }
+          ],
+          response_format: { type: 'json_object' }
+        }),
+      });
 
-    const response = await this.genAI.models.generateContent({
-      model: 'gemini-2.5-flash',
-      contents: fullPrompt,
-      config: {
-        responseMimeType: 'application/json',
-        responseSchema: schema,
+      if (!response.ok) {
+        const errorBody = await response.text();
+        console.error('Deepseek API Error:', errorBody);
+        throw new Error(`API request failed with status ${response.status}: ${response.statusText}`);
       }
-    });
 
-    return response.text;
+      const data = await response.json();
+      return data.choices[0].message.content;
+
+    } catch (error) {
+      console.error('Error calling Deepseek API for violation analysis:', error);
+      throw error;
+    }
   }
 
-  async sendMessageStream(context: string, prompt: string) {
-    if (!this.isInitialized || !this.chat) {
-      throw new Error('Gemini Service is not initialized. Please check your API Key.');
+  async *sendMessageStream(context: string, prompt: string): AsyncGenerator<{ text: string }> {
+    if (!this.isInitialized) {
+      throw new Error('AI Service is not initialized. Please check your API Key.');
     }
     
-    const fullPrompt = `
+    const systemPrompt = `You are an expert paralegal specializing in South Carolina employment law, with deep knowledge of Walmart policies (like IDC 8980) and Sedgwick insurance policies. You will be provided with a complete case file, including core details, a master timeline, the full text of relevant documents, action trackers, and damage calculations. Your task is to analyze this comprehensive data to identify potential legal and policy violations and to suggest actionable steps. Always cite specific laws, policy sections, or document names when possible. Be professional, objective, and informative. Structure your responses clearly using markdown for readability.`;
+    
+    const userPrompt = `
       ---
       CASE CONTEXT (FULL FILE):
       ${context || 'No context provided.'}
@@ -96,6 +94,57 @@ export class GeminiService {
       ${prompt}
     `;
 
-    return this.chat.sendMessageStream({ message: fullPrompt });
+    const response = await fetch(API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${this.apiKey}`,
+      },
+      body: JSON.stringify({
+        model: MODEL_NAME,
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt }
+        ],
+        stream: true,
+      }),
+    });
+
+    if (!response.ok || !response.body) {
+      const errorBody = await response.text();
+      console.error('Deepseek API Error:', errorBody);
+      throw new Error(`API request failed with status ${response.status}`);
+    }
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop() || '';
+
+      for (const line of lines) {
+        if (line.startsWith('data: ')) {
+          const data = line.substring(6).trim();
+          if (data === '[DONE]') {
+            return;
+          }
+          try {
+            const json = JSON.parse(data);
+            const content = json.choices?.[0]?.delta?.content;
+            if (content) {
+              yield { text: content };
+            }
+          } catch (e) {
+            console.error('Error parsing stream chunk:', data, e);
+          }
+        }
+      }
+    }
   }
 }
