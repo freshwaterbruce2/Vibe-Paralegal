@@ -73,6 +73,7 @@ export interface ViolationAlert {
   recommendations: string[];
   detailedExplanation?: string;
   isExpanding?: boolean;
+  showInitialDetails?: boolean;
 }
 
 export type ActiveTab = 'details' | 'documents' | 'chat' | 'timeline' | 'actions' | 'evidence' | 'contacts' | 'deadlines' | 'damages' | 'violations';

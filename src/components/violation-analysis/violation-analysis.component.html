@@ -58,21 +58,34 @@
               </div>
               <div class="mt-4 prose prose-sm max-w-none prose-invert">
                 <p>{{ alert.explanation }}</p>
-
-                <h4 class="font-semibold text-gray-300 mt-4">Supporting Evidence & References:</h4>
-                <ul>
-                  @for (ref of alert.references; track ref) {
-                    <li>{{ ref }}</li>
-                  }
-                </ul>
-
-                <h4 class="font-semibold text-gray-300 mt-4">Recommended Actions:</h4>
-                <ul>
-                  @for (rec of alert.recommendations; track rec) {
-                    <li>{{ rec }}</li>
-                  }
-                </ul>
               </div>
+
+              <div class="mt-2">
+                <button (click)="toggleInitialDetails(alert)" class="flex items-center text-sm font-medium text-blue-400 hover:text-blue-300 focus:outline-none">
+                  <span>{{ alert.showInitialDetails ? 'Hide Details' : 'Show Details' }}</span>
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-1 transition-transform duration-200" [class.rotate-180]="alert.showInitialDetails" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                  </svg>
+                </button>
+              </div>
+              
+              @if (alert.showInitialDetails) {
+                <div class="mt-2 prose prose-sm max-w-none prose-invert">
+                  <h4 class="font-semibold text-gray-300 mt-4">Supporting Evidence & References:</h4>
+                  <ul>
+                    @for (ref of alert.references; track ref) {
+                      <li>{{ ref }}</li>
+                    }
+                  </ul>
+
+                  <h4 class="font-semibold text-gray-300 mt-4">Recommended Actions:</h4>
+                  <ul>
+                    @for (rec of alert.recommendations; track rec) {
+                      <li>{{ rec }}</li>
+                    }
+                  </ul>
+                </div>
+              }
 
               <div class="mt-6">
                 <button (click)="getViolationDetails(alert)"

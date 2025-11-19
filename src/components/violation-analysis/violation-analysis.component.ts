@@ -40,7 +40,7 @@ export class ViolationAnalysisComponent {
       const responseText = await this.aiService.analyzeViolations(fullContext);
       const cleanedJson = responseText.replace(/^```json\n?/, '').replace(/\n?```$/, '');
       const newAlerts: ViolationAlert[] = JSON.parse(cleanedJson);
-      this.violationAlerts.set(newAlerts);
+      this.violationAlerts.set(newAlerts.map(a => ({ ...a, showInitialDetails: false })));
 
       // Check for new high-severity violations to notify user
       if (this.notifyOnViolations() && this.userEmail()) {
@@ -115,6 +115,17 @@ export class ViolationAnalysisComponent {
         )
       );
     }
+  }
+
+  toggleInitialDetails(alertToToggle: ViolationAlert) {
+    this.violationAlerts.update(alerts => {
+      if (!alerts) return null;
+      return alerts.map(alert => 
+        alert.title === alertToToggle.title 
+          ? { ...alert, showInitialDetails: !alert.showInitialDetails } 
+          : alert
+      );
+    });
   }
 
   formatMessageText(text: string): string {
