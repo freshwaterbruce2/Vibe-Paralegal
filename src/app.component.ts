@@ -48,6 +48,9 @@ interface CaseDetails {
   sedgwickDisabilityContact: string;
   sedgwickEmail: string;
   blueCrossContact: string;
+  primaryInsurancePolicyName: string;
+  policyNumber: string;
+  insuranceProviderContact: string;
   injuryDate: string;
   denialDate: string;
   approvalDate: string;
@@ -72,6 +75,8 @@ interface ViolationAlert {
   severity: 'High' | 'Medium' | 'Low';
   references: string[];
   recommendations: string[];
+  detailedExplanation?: string;
+  isExpanding?: boolean;
 }
 
 type ActiveTab = 'details' | 'documents' | 'chat' | 'timeline' | 'actions' | 'evidence' | 'contacts' | 'deadlines' | 'damages' | 'violations';
@@ -284,6 +289,59 @@ export class AppComponent implements AfterViewChecked {
     }
   }
 
+  async getViolationDetails(alertToExpand: ViolationAlert) {
+    if (alertToExpand.isExpanding) return;
+
+    // Set loading state for the specific alert
+    this.violationAlerts.update(alerts => 
+      alerts!.map(alert => 
+        alert.title === alertToExpand.title 
+        ? { ...alert, isExpanding: true, detailedExplanation: '' } // Reset explanation for re-fetch
+        : alert
+      )
+    );
+
+    try {
+      const fullContext = this.getFullContext();
+      const stream = this.aiService.getViolationDetailsStream(fullContext, alertToExpand);
+
+      for await (const chunk of stream) {
+        const chunkText = chunk.text;
+        this.violationAlerts.update(alerts => {
+          if (!alerts) return null;
+          return alerts.map(alert => {
+            if (alert.title === alertToExpand.title) {
+              return {
+                ...alert,
+                detailedExplanation: (alert.detailedExplanation || '') + chunkText
+              };
+            }
+            return alert;
+          });
+        });
+      }
+    } catch (e) {
+      console.error("Failed to get violation details:", e);
+      // Handle error state on the specific alert
+      this.violationAlerts.update(alerts => 
+        alerts!.map(alert => 
+          alert.title === alertToExpand.title 
+          ? { ...alert, detailedExplanation: 'Error: Could not fetch details. Please try again.' }
+          : alert
+        )
+      );
+    } finally {
+      // Set loading state to false
+      this.violationAlerts.update(alerts => 
+        alerts!.map(alert => 
+          alert.title === alertToExpand.title 
+          ? { ...alert, isExpanding: false } 
+          : alert
+        )
+      );
+    }
+  }
+
   private getFullContext(): string {
     const details = this.caseDetails();
     const damages = this.damageCalculator();
@@ -337,7 +395,7 @@ ${documentContext}
 
     try {
       const fullContext = this.getFullContext();
-      const stream = await this.aiService.sendMessageStream(fullContext, prompt);
+      const stream = this.aiService.sendMessageStream(fullContext, prompt);
 
       for await (const chunk of stream) {
         const chunkText = chunk.text;
@@ -388,7 +446,7 @@ ${documentContext}
         deadlineCalendar: this.deadlineCalendar(),
         damageCalculator: this.damageCalculator(),
         documents: this.documents(),
-        violationAlerts: this.violationAlerts()
+        violationAlerts: this.violationAlerts()?.map(({ isExpanding, ...rest }) => rest) // Don't save transient state
       };
       localStorage.setItem('caseFileState', JSON.stringify(stateToSave));
     } catch (e) {
@@ -437,6 +495,9 @@ ${documentContext}
       accommodationClaim: 'C5830D8173-0001-01', disabilityClaim: '4A2507JQ7RH-0001', leaveClaim: 'C507170204800603AA',
       sedgwickAccommodationContact: '855-489-1600', sedgwickDisabilityContact: '800-492-5678', sedgwickEmail: 'WalmartForms@sedgwicksir.com',
       blueCrossContact: 'MEMBER_SERVICES_NUMBER',
+      primaryInsurancePolicyName: '',
+      policyNumber: '',
+      insuranceProviderContact: '',
       injuryDate: 'May 24, 2025', denialDate: 'July 14, 2025', approvalDate: 'August 19, 2025',
       insuranceStopDate: '~June 30, 2025 (DURING FMLA)', clearedToWorkDate: 'November 14, 2025',
       accommodationDeadline: 'November 22, 2025', eeocDeadline: 'May 10, 2026',

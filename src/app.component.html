@@ -60,6 +60,20 @@
         <div class="p-8 overflow-y-auto">
           <h2 class="text-3xl font-bold mb-6 text-gray-100">Core Case Details</h2>
           <div class="space-y-6">
+            <!-- Case Summary & Value -->
+            <div class="bg-gray-900/50 rounded-lg border border-gray-700 p-6">
+              <h3 class="text-lg font-semibold text-gray-300 mb-4">Case Summary & Value</h3>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                <div>
+                  <label class="text-sm text-gray-400">Estimated Case Value</label>
+                  <input type="text" [value]="caseDetails().caseValue" (input)="handleCaseDetailsInput('caseValue', $event)" class="w-full mt-1 p-2 bg-gray-700 border border-gray-600 rounded-md">
+                </div>
+                <div class="row-span-2">
+                  <label class="text-sm text-gray-400">Potential Violations Summary</label>
+                  <textarea rows="4" [value]="caseDetails().violations" (input)="handleCaseDetailsInput('violations', $event)" class="w-full mt-1 p-2 bg-gray-700 border border-gray-600 rounded-md resize-y"></textarea>
+                </div>
+              </div>
+            </div>
             <!-- Identifiers -->
             <div class="bg-gray-900/50 rounded-lg border border-gray-700 p-6">
               <h3 class="text-lg font-semibold text-gray-300 mb-4">Case Identifiers</h3>
@@ -89,6 +103,41 @@
                  <div>
                   <label class="text-sm text-gray-400">Leave</label>
                   <input type="text" [value]="caseDetails().leaveClaim" (input)="handleCaseDetailsInput('leaveClaim', $event)" class="w-full mt-1 p-2 bg-gray-700 border border-gray-600 rounded-md">
+                </div>
+              </div>
+            </div>
+            <!-- Contacts & Insurance -->
+            <div class="bg-gray-900/50 rounded-lg border border-gray-700 p-6">
+              <h3 class="text-lg font-semibold text-gray-300 mb-4">Contacts & Insurance</h3>
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label class="text-sm text-gray-400">Primary Insurance Policy Name</label>
+                  <input type="text" [value]="caseDetails().primaryInsurancePolicyName" (input)="handleCaseDetailsInput('primaryInsurancePolicyName', $event)" class="w-full mt-1 p-2 bg-gray-700 border border-gray-600 rounded-md">
+                </div>
+                <div>
+                  <label class="text-sm text-gray-400">Policy Number</label>
+                  <input type="text" [value]="caseDetails().policyNumber" (input)="handleCaseDetailsInput('policyNumber', $event)" class="w-full mt-1 p-2 bg-gray-700 border border-gray-600 rounded-md">
+                </div>
+                <div>
+                  <label class="text-sm text-gray-400">Insurance Provider Contact</label>
+                  <input type="text" [value]="caseDetails().insuranceProviderContact" (input)="handleCaseDetailsInput('insuranceProviderContact', $event)" class="w-full mt-1 p-2 bg-gray-700 border border-gray-600 rounded-md">
+                </div>
+                <div class="md:col-span-3"><hr class="border-gray-700 my-2"></div>
+                <div>
+                  <label class="text-sm text-gray-400">Sedgwick Accommodation</label>
+                  <input type="text" [value]="caseDetails().sedgwickAccommodationContact" (input)="handleCaseDetailsInput('sedgwickAccommodationContact', $event)" class="w-full mt-1 p-2 bg-gray-700 border border-gray-600 rounded-md">
+                </div>
+                <div>
+                  <label class="text-sm text-gray-400">Sedgwick Disability</label>
+                  <input type="text" [value]="caseDetails().sedgwickDisabilityContact" (input)="handleCaseDetailsInput('sedgwickDisabilityContact', $event)" class="w-full mt-1 p-2 bg-gray-700 border border-gray-600 rounded-md">
+                </div>
+                <div>
+                  <label class="text-sm text-gray-400">Blue Cross Contact</label>
+                  <input type="text" [value]="caseDetails().blueCrossContact" (input)="handleCaseDetailsInput('blueCrossContact', $event)" class="w-full mt-1 p-2 bg-gray-700 border border-gray-600 rounded-md">
+                </div>
+                <div class="md:col-span-3">
+                  <label class="text-sm text-gray-400">Sedgwick Email</label>
+                  <input type="email" [value]="caseDetails().sedgwickEmail" (input)="handleCaseDetailsInput('sedgwickEmail', $event)" class="w-full mt-1 p-2 bg-gray-700 border border-gray-600 rounded-md">
                 </div>
               </div>
             </div>
@@ -458,6 +507,31 @@
                           }
                         </ul>
                       </div>
+
+                      <div class="mt-6">
+                        <button (click)="getViolationDetails(alert)"
+                                [disabled]="alert.isExpanding"
+                                class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-wait">
+                          @if (alert.isExpanding) {
+                            <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            <span>Expanding...</span>
+                          } @else {
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                              <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                            </svg>
+                            <span>Get Detailed Analysis</span>
+                          }
+                        </button>
+                      </div>
+
+                      @if (alert.detailedExplanation) {
+                        <div class="mt-4 p-4 bg-gray-950/50 border border-gray-700 rounded-md prose prose-sm max-w-none prose-invert"
+                            [innerHTML]="formatMessageText(alert.detailedExplanation)">
+                        </div>
+                      }
                   </div>
                 }
               </div>

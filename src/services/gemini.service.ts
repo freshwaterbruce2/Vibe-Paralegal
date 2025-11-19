@@ -6,6 +6,11 @@ declare const process: any;
 const API_URL = 'https://api.deepseek.com/v1/chat/completions';
 const MODEL_NAME = 'deepseek-chat';
 
+interface ViolationAlert {
+  title: string;
+  explanation: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class AiService {
   private apiKey = '';
@@ -77,6 +82,82 @@ If no violations are found, return an empty array [].`;
       throw error;
     }
   }
+  
+  async *getViolationDetailsStream(context: string, violation: ViolationAlert): AsyncGenerator<{ text: string }> {
+    if (!this.isInitialized) {
+      throw new Error('AI Service is not initialized. Please check your API Key.');
+    }
+    
+    const systemPrompt = `You are an expert paralegal specializing in South Carolina employment law, Walmart policies, and Sedgwick policies. You will be provided with a full case file and a specific potential violation that you have previously identified. Your task is to provide a more detailed, in-depth analysis of THIS SPECIFIC violation. Do not repeat the initial explanation, but expand upon it with greater detail.`;
+    
+    const userPrompt = `
+      ---
+      CASE CONTEXT (FULL FILE):
+      ${context}
+      ---
+      USER REQUEST:
+      I am reviewing the following potential violation you previously identified:
+      
+      Title: "${violation.title}"
+      Initial Explanation: "${violation.explanation}"
+      
+      Please provide a more detailed, in-depth analysis of THIS SPECIFIC violation. Expand upon the initial explanation. Detail the specific statutes (e.g., FMLA Section 2614(c)(1), ADA requirements for interactive process), company policies, or legal precedents that apply here. Explain exactly how the events described in the case file might constitute a breach of these rules. Provide a deeper context for the recommended actions. Use markdown for clear formatting.
+    `;
+
+    const response = await fetch(API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${this.apiKey}`,
+      },
+      body: JSON.stringify({
+        model: MODEL_NAME,
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt }
+        ],
+        stream: true,
+      }),
+    });
+
+    if (!response.ok || !response.body) {
+      const errorBody = await response.text();
+      console.error('Deepseek API Error:', errorBody);
+      throw new Error(`API request failed with status ${response.status}`);
+    }
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop() || '';
+
+      for (const line of lines) {
+        if (line.startsWith('data: ')) {
+          const data = line.substring(6).trim();
+          if (data === '[DONE]') {
+            return;
+          }
+          try {
+            const json = JSON.parse(data);
+            const content = json.choices?.[0]?.delta?.content;
+            if (content) {
+              yield { text: content };
+            }
+          } catch (e) {
+            console.error('Error parsing stream chunk:', data, e);
+          }
+        }
+      }
+    }
+  }
+
 
   async *sendMessageStream(context: string, prompt: string): AsyncGenerator<{ text: string }> {
     if (!this.isInitialized) {
