@@ -1,0 +1,99 @@
+<div class="p-8 overflow-y-auto">
+  <h2 class="text-3xl font-bold mb-6 text-gray-100">Core Case Details</h2>
+  <div class="space-y-6">
+    <!-- Case Summary & Value -->
+    <div class="bg-gray-900/50 rounded-lg border border-gray-700 p-6">
+      <h3 class="text-lg font-semibold text-gray-300 mb-4">Case Summary & Value</h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+        <div>
+          <label class="text-sm text-gray-400">Estimated Case Value</label>
+          <input type="text" [value]="caseDetails().caseValue" (input)="handleCaseDetailsInput('caseValue', $event)" class="w-full mt-1 p-2 bg-gray-700 border border-gray-600 rounded-md">
+        </div>
+        <div class="row-span-2">
+          <label class="text-sm text-gray-400">Potential Violations Summary</label>
+          <textarea rows="4" [value]="caseDetails().violations" (input)="handleCaseDetailsInput('violations', $event)" class="w-full mt-1 p-2 bg-gray-700 border border-gray-600 rounded-md resize-y"></textarea>
+        </div>
+      </div>
+    </div>
+    <!-- Identifiers -->
+    <div class="bg-gray-900/50 rounded-lg border border-gray-700 p-6">
+      <h3 class="text-lg font-semibold text-gray-300 mb-4">Case Identifiers</h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label class="text-sm text-gray-400">WIN</label>
+          <input type="text" [value]="caseDetails().win" (input)="handleCaseDetailsInput('win', $event)" class="w-full mt-1 p-2 bg-gray-700 border border-gray-600 rounded-md">
+        </div>
+        <div>
+          <label class="text-sm text-gray-400">Phone</label>
+          <input type="text" [value]="caseDetails().phone" (input)="handleCaseDetailsInput('phone', $event)" class="w-full mt-1 p-2 bg-gray-700 border border-gray-600 rounded-md">
+        </div>
+      </div>
+    </div>
+    <!-- Claim Numbers -->
+    <div class="bg-gray-900/50 rounded-lg border border-gray-700 p-6">
+      <h3 class="text-lg font-semibold text-gray-300 mb-4">Claim Numbers</h3>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+          <label class="text-sm text-gray-400">Accommodation</label>
+          <input type="text" [value]="caseDetails().accommodationClaim" (input)="handleCaseDetailsInput('accommodationClaim', $event)" class="w-full mt-1 p-2 bg-gray-700 border border-gray-600 rounded-md">
+        </div>
+         <div>
+          <label class="text-sm text-gray-400">Disability</label>
+          <input type="text" [value]="caseDetails().disabilityClaim" (input)="handleCaseDetailsInput('disabilityClaim', $event)" class="w-full mt-1 p-2 bg-gray-700 border border-gray-600 rounded-md">
+        </div>
+         <div>
+          <label class="text-sm text-gray-400">Leave</label>
+          <input type="text" [value]="caseDetails().leaveClaim" (input)="handleCaseDetailsInput('leaveClaim', $event)" class="w-full mt-1 p-2 bg-gray-700 border border-gray-600 rounded-md">
+        </div>
+      </div>
+    </div>
+    <!-- Contacts & Insurance -->
+    <div class="bg-gray-900/50 rounded-lg border border-gray-700 p-6">
+      <h3 class="text-lg font-semibold text-gray-300 mb-4">Contacts & Insurance</h3>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+          <label class="text-sm text-gray-400">Primary Insurance Policy Name</label>
+          <input type="text" [value]="caseDetails().primaryInsurancePolicyName" (input)="handleCaseDetailsInput('primaryInsurancePolicyName', $event)" class="w-full mt-1 p-2 bg-gray-700 border border-gray-600 rounded-md">
+        </div>
+        <div>
+          <label class="text-sm text-gray-400">Policy Number</label>
+          <input type="text" [value]="caseDetails().policyNumber" (input)="handleCaseDetailsInput('policyNumber', $event)" class="w-full mt-1 p-2 bg-gray-700 border border-gray-600 rounded-md">
+        </div>
+        <div>
+          <label class="text-sm text-gray-400">Insurance Provider Contact</label>
+          <input type="text" [value]="caseDetails().insuranceProviderContact" (input)="handleCaseDetailsInput('insuranceProviderContact', $event)" class="w-full mt-1 p-2 bg-gray-700 border border-gray-600 rounded-md">
+        </div>
+        <div class="md:col-span-3"><hr class="border-gray-700 my-2"></div>
+        <div>
+          <label class="text-sm text-gray-400">Sedgwick Accommodation</label>
+          <input type="text" [value]="caseDetails().sedgwickAccommodationContact" (input)="handleCaseDetailsInput('sedgwickAccommodationContact', $event)" class="w-full mt-1 p-2 bg-gray-700 border border-gray-600 rounded-md">
+        </div>
+        <div>
+          <label class="text-sm text-gray-400">Sedgwick Disability</label>
+          <input type="text" [value]="caseDetails().sedgwickDisabilityContact" (input)="handleCaseDetailsInput('sedgwickDisabilityContact', $event)" class="w-full mt-1 p-2 bg-gray-700 border border-gray-600 rounded-md">
+        </div>
+        <div>
+          <label class="text-sm text-gray-400">Blue Cross Contact</label>
+          <input type="text" [value]="caseDetails().blueCrossContact" (input)="handleCaseDetailsInput('blueCrossContact', $event)" class="w-full mt-1 p-2 bg-gray-700 border border-gray-600 rounded-md">
+        </div>
+        <div class="md:col-span-3">
+          <label class="text-sm text-gray-400">Sedgwick Email</label>
+          <input type="email" [value]="caseDetails().sedgwickEmail" (input)="handleCaseDetailsInput('sedgwickEmail', $event)" class="w-full mt-1 p-2 bg-gray-700 border border-gray-600 rounded-md">
+        </div>
+      </div>
+    </div>
+    <!-- Critical Dates -->
+    <div class="bg-gray-900/50 rounded-lg border border-gray-700 p-6">
+      <h3 class="text-lg font-semibold text-gray-300 mb-4">Critical Dates</h3>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+         <div><label class="text-sm text-gray-400">Injury</label><input type="text" [value]="caseDetails().injuryDate" (input)="handleCaseDetailsInput('injuryDate', $event)" class="w-full mt-1 p-2 bg-gray-700 border border-gray-600 rounded-md"></div>
+         <div><label class="text-sm text-gray-400">Denial</label><input type="text" [value]="caseDetails().denialDate" (input)="handleCaseDetailsInput('denialDate', $event)" class="w-full mt-1 p-2 bg-gray-700 border border-gray-600 rounded-md"></div>
+         <div><label class="text-sm text-gray-400">Approval</label><input type="text" [value]="caseDetails().approvalDate" (input)="handleCaseDetailsInput('approvalDate', $event)" class="w-full mt-1 p-2 bg-gray-700 border border-gray-600 rounded-md"></div>
+         <div><label class="text-sm text-gray-400">Insurance Stop</label><input type="text" [value]="caseDetails().insuranceStopDate" (input)="handleCaseDetailsInput('insuranceStopDate', $event)" class="w-full mt-1 p-2 bg-gray-700 border border-gray-600 rounded-md"></div>
+         <div><label class="text-sm text-gray-400">Cleared to Work</label><input type="text" [value]="caseDetails().clearedToWorkDate" (input)="handleCaseDetailsInput('clearedToWorkDate', $event)" class="w-full mt-1 p-2 bg-gray-700 border border-gray-600 rounded-md"></div>
+         <div><label class="text-sm text-gray-400">Accom. Deadline</label><input type="text" [value]="caseDetails().accommodationDeadline" (input)="handleCaseDetailsInput('accommodationDeadline', $event)" class="w-full mt-1 p-2 bg-gray-700 border border-gray-600 rounded-md"></div>
+         <div class="col-span-2"><label class="text-sm font-bold text-red-400">EEOC Deadline</label><input type="text" [value]="caseDetails().eeocDeadline" (input)="handleCaseDetailsInput('eeocDeadline', $event)" class="w-full mt-1 p-2 bg-red-900/50 border border-red-700 rounded-md"></div>
+      </div>
+    </div>
+  </div>
+</div>

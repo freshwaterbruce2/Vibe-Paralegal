@@ -1,0 +1,27 @@
+<div class="p-8 overflow-y-auto">
+  <h2 class="text-3xl font-bold mb-6 text-gray-100">Evidence Tracking Log</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="bg-gray-900/50 rounded-lg border border-gray-700 p-6 prose prose-invert max-w-none">
+            <h3 class="text-lg font-semibold text-green-400">HAVE:</h3>
+            <ul class="space-y-3 mt-4">
+              @for (item of evidenceHave(); track item.id) {
+                <li class="flex items-center">
+                  <input type="checkbox" [id]="'have-' + item.id" [checked]="item.checked" (change)="toggleEvidenceHaveItem(item.id)" class="h-5 w-5 rounded bg-gray-700 border-gray-500 text-blue-500 focus:ring-blue-600">
+                  <label [for]="'have-' + item.id" class="ml-3 text-gray-300 cursor-pointer" [class.line-through]="item.checked" [class.text-gray-500]="item.checked">{{ item.text }}</label>
+                </li>
+              }
+            </ul>
+        </div>
+         <div class="bg-gray-900/50 rounded-lg border border-gray-700 p-6 prose prose-invert max-w-none">
+            <h3 class="text-lg font-semibold text-yellow-400">NEED TO GET:</h3>
+            <ul class="space-y-3 mt-4">
+               @for (item of evidenceNeed(); track item.id) {
+                <li class="flex items-center">
+                  <input type="checkbox" [id]="'need-' + item.id" [checked]="item.checked" (change)="toggleEvidenceNeedItem(item.id)" class="h-5 w-5 rounded bg-gray-700 border-gray-500 text-blue-500 focus:ring-blue-600">
+                  <label [for]="'need-' + item.id" class="ml-3 text-gray-300 cursor-pointer" [class.line-through]="item.checked" [class.text-gray-500]="item.checked">{{ item.text }}</label>
+                </li>
+              }
+            </ul>
+        </div>
+    </div>
+</div>

@@ -9,7 +9,7 @@
       <p class="text-xs text-gray-500 mt-1 text-center">Simple. Organized. Effective.</p>
     </header>
 
-    <nav class="flex flex-col space-y-2">
+    <nav class="flex flex-col space-y-2 flex-grow">
       <button (click)="setActiveTab('details')" [class.bg-blue-600/20]="activeTab() === 'details'" [class.text-blue-300]="activeTab() === 'details'" [class.hover:bg-gray-800/60]="activeTab() !== 'details'" class="flex items-center px-4 py-2 rounded-md text-gray-300 transition-colors duration-200 w-full text-left">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" viewBox="0 0 20 20" fill="currentColor"><path d="M10 2a4 4 0 00-4 4v1H5a1 1 0 00-.993.883L4 8v9a1 1 0 001 1h10a1 1 0 001-1V8l-.007-.117A1 1 0 0015 7h-1V6a4 4 0 00-4-4zm2 5H8V6a2 2 0 114 0v1z" /></svg>
         Case Details
@@ -51,495 +51,105 @@
         Violation Analysis
       </button>
     </nav>
+
+    <!-- Export and Settings Buttons -->
+    <div class="mt-auto space-y-2">
+       <button (click)="exportCaseFile()" class="flex items-center px-4 py-2 rounded-md text-gray-400 hover:bg-gray-800/60 hover:text-gray-200 transition-colors duration-200 w-full text-left">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" />
+        </svg>
+        Export Case File
+      </button>
+       <button (click)="toggleSettings()" class="flex items-center px-4 py-2 rounded-md text-gray-400 hover:bg-gray-800/60 hover:text-gray-200 transition-colors duration-200 w-full text-left">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-1.57 1.996A1.532 1.532 0 013 8.22v3.56c0 .64.327 1.24.872 1.574.986.636 2.04.143 2.551 1.026.512.884.23 2.02-.644 2.551-.873.532-1.175 1.625-.643 2.55a1.532 1.532 0 01.947 2.286c-.835 1.372.734 2.942 1.996 1.57.726-.441 1.573-.553 2.286-.948 1.56.38 1.56 2.6 0 2.98a1.532 1.532 0 01-.948 2.286c.836 1.372 2.942-.734 1.57-1.996A1.532 1.532 0 0117 11.78V8.22c0-.64-.327-1.24-.872-1.574-.986-.636-2.04-.143-2.551-1.026-.512-.884-.23-2.02.644-2.551.873.532 1.175 1.625-.643 2.55a1.532 1.532 0 01-.947-2.286c.835-1.372-.734-2.942-1.996-1.57a1.532 1.532 0 01-2.286.948zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd" /></svg>
+        Settings
+      </button>
+    </div>
   </aside>
 
   <!-- Right Panel: Main Content -->
   <section class="flex-grow flex flex-col h-full bg-gray-800/50">
     @switch (activeTab()) {
-      @case ('details') {
-        <div class="p-8 overflow-y-auto">
-          <h2 class="text-3xl font-bold mb-6 text-gray-100">Core Case Details</h2>
-          <div class="space-y-6">
-            <!-- Case Summary & Value -->
-            <div class="bg-gray-900/50 rounded-lg border border-gray-700 p-6">
-              <h3 class="text-lg font-semibold text-gray-300 mb-4">Case Summary & Value</h3>
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-                <div>
-                  <label class="text-sm text-gray-400">Estimated Case Value</label>
-                  <input type="text" [value]="caseDetails().caseValue" (input)="handleCaseDetailsInput('caseValue', $event)" class="w-full mt-1 p-2 bg-gray-700 border border-gray-600 rounded-md">
-                </div>
-                <div class="row-span-2">
-                  <label class="text-sm text-gray-400">Potential Violations Summary</label>
-                  <textarea rows="4" [value]="caseDetails().violations" (input)="handleCaseDetailsInput('violations', $event)" class="w-full mt-1 p-2 bg-gray-700 border border-gray-600 rounded-md resize-y"></textarea>
-                </div>
-              </div>
-            </div>
-            <!-- Identifiers -->
-            <div class="bg-gray-900/50 rounded-lg border border-gray-700 p-6">
-              <h3 class="text-lg font-semibold text-gray-300 mb-4">Case Identifiers</h3>
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label class="text-sm text-gray-400">WIN</label>
-                  <input type="text" [value]="caseDetails().win" (input)="handleCaseDetailsInput('win', $event)" class="w-full mt-1 p-2 bg-gray-700 border border-gray-600 rounded-md">
-                </div>
-                <div>
-                  <label class="text-sm text-gray-400">Phone</label>
-                  <input type="text" [value]="caseDetails().phone" (input)="handleCaseDetailsInput('phone', $event)" class="w-full mt-1 p-2 bg-gray-700 border border-gray-600 rounded-md">
-                </div>
-              </div>
-            </div>
-            <!-- Claim Numbers -->
-            <div class="bg-gray-900/50 rounded-lg border border-gray-700 p-6">
-              <h3 class="text-lg font-semibold text-gray-300 mb-4">Claim Numbers</h3>
-              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <label class="text-sm text-gray-400">Accommodation</label>
-                  <input type="text" [value]="caseDetails().accommodationClaim" (input)="handleCaseDetailsInput('accommodationClaim', $event)" class="w-full mt-1 p-2 bg-gray-700 border border-gray-600 rounded-md">
-                </div>
-                 <div>
-                  <label class="text-sm text-gray-400">Disability</label>
-                  <input type="text" [value]="caseDetails().disabilityClaim" (input)="handleCaseDetailsInput('disabilityClaim', $event)" class="w-full mt-1 p-2 bg-gray-700 border border-gray-600 rounded-md">
-                </div>
-                 <div>
-                  <label class="text-sm text-gray-400">Leave</label>
-                  <input type="text" [value]="caseDetails().leaveClaim" (input)="handleCaseDetailsInput('leaveClaim', $event)" class="w-full mt-1 p-2 bg-gray-700 border border-gray-600 rounded-md">
-                </div>
-              </div>
-            </div>
-            <!-- Contacts & Insurance -->
-            <div class="bg-gray-900/50 rounded-lg border border-gray-700 p-6">
-              <h3 class="text-lg font-semibold text-gray-300 mb-4">Contacts & Insurance</h3>
-              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <label class="text-sm text-gray-400">Primary Insurance Policy Name</label>
-                  <input type="text" [value]="caseDetails().primaryInsurancePolicyName" (input)="handleCaseDetailsInput('primaryInsurancePolicyName', $event)" class="w-full mt-1 p-2 bg-gray-700 border border-gray-600 rounded-md">
-                </div>
-                <div>
-                  <label class="text-sm text-gray-400">Policy Number</label>
-                  <input type="text" [value]="caseDetails().policyNumber" (input)="handleCaseDetailsInput('policyNumber', $event)" class="w-full mt-1 p-2 bg-gray-700 border border-gray-600 rounded-md">
-                </div>
-                <div>
-                  <label class="text-sm text-gray-400">Insurance Provider Contact</label>
-                  <input type="text" [value]="caseDetails().insuranceProviderContact" (input)="handleCaseDetailsInput('insuranceProviderContact', $event)" class="w-full mt-1 p-2 bg-gray-700 border border-gray-600 rounded-md">
-                </div>
-                <div class="md:col-span-3"><hr class="border-gray-700 my-2"></div>
-                <div>
-                  <label class="text-sm text-gray-400">Sedgwick Accommodation</label>
-                  <input type="text" [value]="caseDetails().sedgwickAccommodationContact" (input)="handleCaseDetailsInput('sedgwickAccommodationContact', $event)" class="w-full mt-1 p-2 bg-gray-700 border border-gray-600 rounded-md">
-                </div>
-                <div>
-                  <label class="text-sm text-gray-400">Sedgwick Disability</label>
-                  <input type="text" [value]="caseDetails().sedgwickDisabilityContact" (input)="handleCaseDetailsInput('sedgwickDisabilityContact', $event)" class="w-full mt-1 p-2 bg-gray-700 border border-gray-600 rounded-md">
-                </div>
-                <div>
-                  <label class="text-sm text-gray-400">Blue Cross Contact</label>
-                  <input type="text" [value]="caseDetails().blueCrossContact" (input)="handleCaseDetailsInput('blueCrossContact', $event)" class="w-full mt-1 p-2 bg-gray-700 border border-gray-600 rounded-md">
-                </div>
-                <div class="md:col-span-3">
-                  <label class="text-sm text-gray-400">Sedgwick Email</label>
-                  <input type="email" [value]="caseDetails().sedgwickEmail" (input)="handleCaseDetailsInput('sedgwickEmail', $event)" class="w-full mt-1 p-2 bg-gray-700 border border-gray-600 rounded-md">
-                </div>
-              </div>
-            </div>
-            <!-- Critical Dates -->
-            <div class="bg-gray-900/50 rounded-lg border border-gray-700 p-6">
-              <h3 class="text-lg font-semibold text-gray-300 mb-4">Critical Dates</h3>
-              <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                 <div><label class="text-sm text-gray-400">Injury</label><input type="text" [value]="caseDetails().injuryDate" (input)="handleCaseDetailsInput('injuryDate', $event)" class="w-full mt-1 p-2 bg-gray-700 border border-gray-600 rounded-md"></div>
-                 <div><label class="text-sm text-gray-400">Denial</label><input type="text" [value]="caseDetails().denialDate" (input)="handleCaseDetailsInput('denialDate', $event)" class="w-full mt-1 p-2 bg-gray-700 border border-gray-600 rounded-md"></div>
-                 <div><label class="text-sm text-gray-400">Approval</label><input type="text" [value]="caseDetails().approvalDate" (input)="handleCaseDetailsInput('approvalDate', $event)" class="w-full mt-1 p-2 bg-gray-700 border border-gray-600 rounded-md"></div>
-                 <div><label class="text-sm text-gray-400">Insurance Stop</label><input type="text" [value]="caseDetails().insuranceStopDate" (input)="handleCaseDetailsInput('insuranceStopDate', $event)" class="w-full mt-1 p-2 bg-gray-700 border border-gray-600 rounded-md"></div>
-                 <div><label class="text-sm text-gray-400">Cleared to Work</label><input type="text" [value]="caseDetails().clearedToWorkDate" (input)="handleCaseDetailsInput('clearedToWorkDate', $event)" class="w-full mt-1 p-2 bg-gray-700 border border-gray-600 rounded-md"></div>
-                 <div><label class="text-sm text-gray-400">Accom. Deadline</label><input type="text" [value]="caseDetails().accommodationDeadline" (input)="handleCaseDetailsInput('accommodationDeadline', $event)" class="w-full mt-1 p-2 bg-gray-700 border border-gray-600 rounded-md"></div>
-                 <div class="col-span-2"><label class="text-sm font-bold text-red-400">EEOC Deadline</label><input type="text" [value]="caseDetails().eeocDeadline" (input)="handleCaseDetailsInput('eeocDeadline', $event)" class="w-full mt-1 p-2 bg-red-900/50 border border-red-700 rounded-md"></div>
-              </div>
-            </div>
-          </div>
-        </div>
-      }
-      @case ('documents') {
-        <div class="p-8 flex flex-col h-full overflow-hidden">
-          <header class="flex-shrink-0 mb-6 flex items-center justify-between">
-            <h2 class="text-3xl font-bold text-gray-100">Case Documents</h2>
-            <label class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-500 cursor-pointer">
-              <span>Add Document</span>
-              <input type="file" class="hidden" (change)="handleDocumentUpload($event)" accept=".txt,.md,.pdf,.doc,.docx">
-            </label>
-          </header>
-          
-          @if (selectedDocument() === null) {
-            <div class="flex-shrink-0 mb-4">
-              <input 
-                type="search" 
-                placeholder="Search documents by name or content..." 
-                class="w-full p-3 bg-gray-700 border border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                [value]="documentSearchQuery()"
-                (input)="handleSearchInput($event)">
-            </div>
-            <div class="flex-grow overflow-y-auto pr-2">
-              <ul class="space-y-2">
-                @for (doc of filteredDocuments(); track doc.id) {
-                  <li (click)="selectDocument(doc)" class="bg-gray-900/50 p-4 rounded-md border border-gray-700 hover:border-blue-500 cursor-pointer transition-colors duration-200">
-                    <p class="font-semibold text-blue-300">{{ doc.name }}</p>
-                    <p class="text-xs text-gray-400">Uploaded: {{ doc.uploaded }}</p>
-                  </li>
-                } @empty {
-                  <div class="text-center py-12 border-2 border-dashed border-gray-700 rounded-lg">
-                    <p class="text-gray-400">No documents found.</p>
-                    <p class="text-sm text-gray-500">Add a document to get started.</p>
-                  </div>
-                }
-              </ul>
-            </div>
-          } @else {
-            <div class="flex-grow flex flex-col bg-gray-900/50 rounded-lg border border-gray-700 overflow-hidden">
-              <header class="flex-shrink-0 p-4 bg-gray-950/70 flex items-center justify-between border-b border-gray-700">
-                <h3 class="font-semibold text-lg">{{ selectedDocument()?.name }}</h3>
-                <button (click)="selectDocument(null)" class="text-gray-400 hover:text-white">&times;</button>
-              </header>
-              <div class="flex-grow p-6 overflow-y-auto prose prose-invert max-w-none prose-sm" [innerHTML]="getHighlightedContent(selectedDocument()!.content)">
-              </div>
-            </div>
-          }
-        </div>
-      }
-      @case ('chat') {
-        <div #chatContainer class="flex-grow p-6 overflow-y-auto">
-          <div class="flex flex-col space-y-4">
-            @for (message of messages(); track $index) {
-              <div class="flex" [class.justify-end]="message.role === 'user'" [class.justify-start]="message.role === 'model'">
-                <div class="max-w-3xl px-4 py-3 rounded-xl" [class.bg-blue-600]="message.role === 'user'" [class.bg-gray-700]="message.role === 'model'">
-                  @if (message.role === 'model') {
-                    <div class="prose prose-sm max-w-none prose-invert" [innerHTML]="formatMessageText(message.text)"></div>
-                  } @else {
-                    <p class="text-white">{{ message.text }}</p>
-                  }
-                </div>
-              </div>
-            }
-            @if (loading() && messages()[messages().length - 1]?.text === '') {
-              <div class="flex justify-start">
-                 <div class="max-w-3xl px-4 py-3 rounded-xl bg-gray-700 flex items-center space-x-2">
-                    <div class="w-2 h-2 bg-gray-400 rounded-full animate-pulse [animation-delay:-0.3s]"></div>
-                    <div class="w-2 h-2 bg-gray-400 rounded-full animate-pulse [animation-delay:-0.15s]"></div>
-                    <div class="w-2 h-2 bg-gray-400 rounded-full animate-pulse"></div>
-                </div>
-              </div>
-            }
-          </div>
-        </div>
-
-        @if (error()) {
-          <div class="px-6 pb-2">
-            <div class="bg-red-500/20 border border-red-500 text-red-300 px-4 py-3 rounded-md" role="alert">
-              <p>{{ error() }}</p>
-            </div>
-          </div>
-        }
-
-        <div class="p-6 border-t border-gray-700 bg-gray-900/50">
-          <form class="flex items-center space-x-4" (submit)="$event.preventDefault(); sendMessage()">
-            <textarea
-              class="flex-grow p-3 bg-gray-700 border border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none resize-none text-gray-200 placeholder-gray-400 disabled:opacity-50"
-              placeholder="Ask a question or describe the focus of your action plan..."
-              rows="1"
-              [value]="chatPrompt()"
-              (input)="handlePromptInput($event)"
-              (keydown.enter)="handleKeydownEnter($event)"
-              [disabled]="loading()"
-            ></textarea>
-            <button
-              type="button"
-              (click)="generateActionPlan()"
-              class="bg-gray-600 text-gray-200 p-3 rounded-md hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-blue-500 disabled:bg-gray-700 disabled:cursor-not-allowed transition-colors duration-200"
-              [disabled]="loading()"
-              title="Generate Action Plan"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
-              </svg>
-            </button>
-            <button
-              type="submit"
-              class="bg-blue-600 text-white p-3 rounded-md hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-blue-500 disabled:bg-blue-800 disabled:cursor-not-allowed transition-colors duration-200"
-              [disabled]="loading() || !chatPrompt().trim()"
-              title="Send Message"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 transform -rotate-90" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-              </svg>
-            </button>
-          </form>
-        </div>
-      }
-      @case ('timeline') {
-        <div class="p-8 overflow-y-auto">
-          <h2 class="text-3xl font-bold mb-6 text-gray-100">Master Timeline</h2>
-           <div class="bg-gray-900/50 rounded-lg border border-gray-700 p-6">
-              <div class="prose prose-invert max-w-none mb-4">
-                <p>This is the master source of truth for your case. It contains every key date and event. The AI Paralegal uses this as its primary context. You can edit it below.</p>
-              </div>
-              <textarea 
-                  class="w-full h-[60vh] p-3 bg-gray-950/50 border border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none resize-y text-gray-300 placeholder-gray-500 font-mono"
-                  [value]="masterTimeline()"
-                  (input)="handleTimelineInput($event)"
-              ></textarea>
-           </div>
-        </div>
-      }
-      @case ('actions') {
-         <div class="p-8 overflow-y-auto">
-          <h2 class="text-3xl font-bold mb-6 text-gray-100">Action Tracker</h2>
-            <div class="bg-gray-900/50 rounded-lg border border-gray-700 p-6 prose prose-invert max-w-none">
-                <h3 class="text-lg font-semibold text-gray-300">MUST DO TODAY:</h3>
-                <ul class="space-y-3 mt-4">
-                    @for (item of actionTracker(); track item.id) {
-                      <li class="flex items-center">
-                        <input type="checkbox" [id]="'action-' + item.id" [checked]="item.checked" (change)="toggleActionTrackerItem(item.id)" class="h-5 w-5 rounded bg-gray-700 border-gray-500 text-blue-500 focus:ring-blue-600">
-                        <label [for]="'action-' + item.id" class="ml-3 text-gray-300 cursor-pointer" [class.line-through]="item.checked" [class.text-gray-500]="item.checked">{{ item.text }}</label>
-                      </li>
-                    }
-                </ul>
-            </div>
-        </div>
-      }
-      @case ('evidence') {
-        <div class="p-8 overflow-y-auto">
-          <h2 class="text-3xl font-bold mb-6 text-gray-100">Evidence Tracking Log</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="bg-gray-900/50 rounded-lg border border-gray-700 p-6 prose prose-invert max-w-none">
-                    <h3 class="text-lg font-semibold text-green-400">HAVE:</h3>
-                    <ul class="space-y-3 mt-4">
-                      @for (item of evidenceHave(); track item.id) {
-                        <li class="flex items-center">
-                          <input type="checkbox" [id]="'have-' + item.id" [checked]="item.checked" (change)="toggleEvidenceHaveItem(item.id)" class="h-5 w-5 rounded bg-gray-700 border-gray-500 text-blue-500 focus:ring-blue-600">
-                          <label [for]="'have-' + item.id" class="ml-3 text-gray-300 cursor-pointer" [class.line-through]="item.checked" [class.text-gray-500]="item.checked">{{ item.text }}</label>
-                        </li>
-                      }
-                    </ul>
-                </div>
-                 <div class="bg-gray-900/50 rounded-lg border border-gray-700 p-6 prose prose-invert max-w-none">
-                    <h3 class="text-lg font-semibold text-yellow-400">NEED TO GET:</h3>
-                    <ul class="space-y-3 mt-4">
-                       @for (item of evidenceNeed(); track item.id) {
-                        <li class="flex items-center">
-                          <input type="checkbox" [id]="'need-' + item.id" [checked]="item.checked" (change)="toggleEvidenceNeedItem(item.id)" class="h-5 w-5 rounded bg-gray-700 border-gray-500 text-blue-500 focus:ring-blue-600">
-                          <label [for]="'need-' + item.id" class="ml-3 text-gray-300 cursor-pointer" [class.line-through]="item.checked" [class.text-gray-500]="item.checked">{{ item.text }}</label>
-                        </li>
-                      }
-                    </ul>
-                </div>
-            </div>
-        </div>
-      }
-      @case ('contacts') {
-        <div class="p-8 overflow-y-auto">
-          <h2 class="text-3xl font-bold mb-6 text-gray-100">Contact Log</h2>
-          <div class="space-y-6">
-            @for (log of contactLog(); track log.date) {
-              <div class="bg-gray-900/50 rounded-lg border border-gray-700 p-6 prose prose-invert max-w-none">
-                <p class="text-sm text-gray-400">{{ log.date }} | PERSON: {{ log.person }} | METHOD: {{ log.method }}</p>
-                @if (log.said.length > 0) {
-                  <h4 class="font-bold mt-2">WHAT THEY SAID:</h4>
-                  <ul class="list-disc list-inside">
-                    @for(item of log.said; track item){ <li>{{item}}</li> }
-                  </ul>
-                }
-                @if (log.followUp.length > 0) {
-                  <h4 class="font-bold mt-2">FOLLOW-UP NEEDED:</h4>
-                  <ul class="list-disc list-inside">
-                    @for(item of log.followUp; track item){ <li>{{item}}</li> }
-                  </ul>
-                }
-                @if (log.discrepancy) {
-                  <div class="mt-4 border-l-4 border-red-500 pl-4">
-                    <p class="font-semibold text-red-400">{{ log.discrepancy.title }}:</p>
-                    <p class="text-gray-300">{{ log.discrepancy.detail }}</p>
-                  </div>
-                }
-              </div>
-            }
-          </div>
-        </div>
-      }
-      @case ('deadlines') {
-        <div class="p-8 overflow-y-auto">
-          <h2 class="text-3xl font-bold mb-6 text-gray-100">Deadline Calendar</h2>
-          <div class="bg-gray-900/50 rounded-lg border border-gray-700">
-            <table class="w-full text-left">
-              <thead class="bg-gray-800/50">
-                <tr>
-                  <th class="p-4 font-semibold">Date</th>
-                  <th class="p-4 font-semibold">What</th>
-                  <th class="p-4 font-semibold">Action Required</th>
-                  <th class="p-4 font-semibold">Status</th>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-gray-700">
-                @for (deadline of deadlineCalendar(); track deadline.date) {
-                  <tr [class.border-t-2]="deadline.isCritical" [class.border-red-500/50]="deadline.isCritical">
-                    <td class="p-4 font-bold" [class.text-yellow-300]="deadline.status === 'TODAY'" [class.text-red-400]="deadline.status === 'CRITICAL'">{{ deadline.date }}</td>
-                    <td class="p-4" [class.font-semibold]="deadline.isCritical">{{ deadline.what }}</td>
-                    <td class="p-4">{{ deadline.action }}</td>
-                    <td class="p-4">
-                      @switch(deadline.status) {
-                        @case('TODAY') { <span class="px-2 py-1 text-xs font-semibold bg-yellow-500/20 text-yellow-300 rounded-full">TODAY</span> }
-                        @case('Pending') { <span class="px-2 py-1 text-xs font-semibold bg-gray-600/50 text-gray-300 rounded-full">Pending</span> }
-                        @case('Future') { <span class="px-2 py-1 text-xs font-semibold bg-gray-700 text-gray-400 rounded-full">Future</span> }
-                        @case('CRITICAL') { <span class="px-2 py-1 text-xs font-semibold bg-red-500/20 text-red-300 rounded-full">CRITICAL</span> }
-                      }
-                    </td>
-                  </tr>
-                }
-              </tbody>
-            </table>
-          </div>
-        </div>
-      }
-       @case ('damages') {
-        <div class="p-8 overflow-y-auto">
-          <h2 class="text-3xl font-bold mb-6 text-gray-100">Damage Calculator (Running Total)</h2>
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div class="bg-gray-900/50 rounded-lg border border-gray-700 p-6">
-                <label for="lostWages" class="text-lg font-semibold text-gray-300">Lost Wages</label>
-                <p class="text-sm text-gray-400 mb-4">$26.40/hr × 40 hrs/wk = $1,056/week</p>
-                <div class="flex items-center">
-                    <span class="text-2xl text-gray-400 mr-2">$</span>
-                    <input id="lostWages" type="number" step="100" class="w-full bg-transparent text-4xl font-bold text-green-400 outline-none" [value]="damageCalculator().lostWages" (input)="handleDamageInput('lostWages', $event)">
-                </div>
-            </div>
-             <div class="bg-gray-900/50 rounded-lg border border-gray-700 p-6">
-                <label for="insuranceCosts" class="text-lg font-semibold text-gray-300">Insurance Costs</label>
-                 <p class="text-sm text-gray-400 mb-4">Private insurance premium payments</p>
-                 <div class="flex items-center">
-                    <span class="text-2xl text-gray-400 mr-2">$</span>
-                    <input id="insuranceCosts" type="number" step="50" class="w-full bg-transparent text-4xl font-bold text-yellow-400 outline-none" [value]="damageCalculator().insuranceCosts" (input)="handleDamageInput('insuranceCosts', $event)">
-                 </div>
-            </div>
-             <div class="bg-gray-900/50 rounded-lg border border-gray-700 p-6">
-                <label for="medicalExpenses" class="text-lg font-semibold text-gray-300">Medical Expenses</label>
-                 <p class="text-sm text-gray-400 mb-4">Costs incurred while uninsured</p>
-                 <div class="flex items-center">
-                     <span class="text-2xl text-gray-400 mr-2">$</span>
-                     <input id="medicalExpenses" type="number" step="50" class="w-full bg-transparent text-4xl font-bold text-orange-400 outline-none" [value]="damageCalculator().medicalExpenses" (input)="handleDamageInput('medicalExpenses', $event)">
-                 </div>
-            </div>
-          </div>
-           <div class="mt-8 bg-gray-950/80 rounded-lg border-2 border-blue-500 p-6 flex items-center justify-between">
-              <h3 class="text-2xl font-bold text-gray-100">Grand Total Damages:</h3>
-              <p class="text-5xl font-bold text-blue-300">{{ totalDamages() | number:'1.2-2' }}</p>
-           </div>
-        </div>
-      }
-      @case ('violations') {
-        <div class="p-8 overflow-y-auto">
-          <header class="flex items-center justify-between mb-6">
-            <h2 class="text-3xl font-bold text-gray-100">AI Violation Analysis</h2>
-            <button (click)="analyzeForViolations()" 
-                    [disabled]="analysisLoading()"
-                    class="bg-blue-600 text-white px-5 py-2 rounded-md hover:bg-blue-500 disabled:bg-blue-800 disabled:cursor-wait transition-colors flex items-center">
-              @if (analysisLoading()) {
-                <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                Analyzing...
-              } @else {
-                <span>Analyze Case for Violations</span>
-              }
-            </button>
-          </header>
-      
-          @if (error() && activeTab() === 'violations') {
-            <div class="bg-red-500/20 border border-red-500 text-red-300 px-4 py-3 rounded-md mb-6" role="alert">
-              <p><strong>Analysis Failed:</strong> {{ error() }}</p>
-            </div>
-          }
-      
-          @if (analysisLoading()) {
-            <div class="text-center py-12 border-2 border-dashed border-gray-700 rounded-lg">
-              <p class="text-gray-400 text-lg">AI is analyzing the entire case file...</p>
-              <p class="text-sm text-gray-500 mt-2">This may take a moment. The system is cross-referencing documents, timelines, and legal/policy data.</p>
-            </div>
-          } @else {
-            @if (violationAlerts() === null) {
-              <div class="text-center py-12 border-2 border-dashed border-gray-700 rounded-lg bg-gray-900/30">
-                <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto h-12 w-12 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
-                <h3 class="mt-2 text-lg font-medium text-gray-200">Ready to Analyze</h3>
-                <p class="mt-1 text-sm text-gray-400">Click the "Analyze Case for Violations" button to start the AI-driven analysis.</p>
-              </div>
-            } @else if (violationAlerts()!.length === 0) {
-              <div class="text-center py-12 border-2 border-dashed border-green-500/30 bg-green-900/20 rounded-lg">
-                 <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto h-12 w-12 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                <h3 class="mt-2 text-lg font-medium text-green-300">No Potential Violations Found</h3>
-                <p class="mt-1 text-sm text-gray-400">Based on the provided information, the AI did not identify any immediate potential violations.</p>
-              </div>
-            } @else {
-              <div class="space-y-6">
-                @for (alert of violationAlerts(); track alert.title) {
-                  <div class="bg-gray-900/50 rounded-lg border-l-4 p-6"
-                       [class.border-red-500]="alert.severity === 'High'"
-                       [class.border-orange-500]="alert.severity === 'Medium'"
-                       [class.border-yellow-500]="alert.severity === 'Low'">
-                      <div class="flex items-center justify-between">
-                          <h3 class="text-xl font-bold text-gray-100">{{ alert.title }}</h3>
-                          <span class="px-3 py-1 text-xs font-semibold rounded-full"
-                                [class.bg-red-500/20]="alert.severity === 'High'" [class.text-red-300]="alert.severity === 'High'"
-                                [class.bg-orange-500/20]="alert.severity === 'Medium'" [class.text-orange-300]="alert.severity === 'Medium'"
-                                [class.bg-yellow-500/20]="alert.severity === 'Low'" [class.text-yellow-300]="alert.severity === 'Low'">
-                              {{ alert.severity }} Severity
-                          </span>
-                      </div>
-                      <div class="mt-4 prose prose-sm max-w-none prose-invert">
-                        <p>{{ alert.explanation }}</p>
-      
-                        <h4 class="font-semibold text-gray-300 mt-4">Supporting Evidence & References:</h4>
-                        <ul>
-                          @for (ref of alert.references; track ref) {
-                            <li>{{ ref }}</li>
-                          }
-                        </ul>
-      
-                        <h4 class="font-semibold text-gray-300 mt-4">Recommended Actions:</h4>
-                        <ul>
-                          @for (rec of alert.recommendations; track rec) {
-                            <li>{{ rec }}</li>
-                          }
-                        </ul>
-                      </div>
-
-                      <div class="mt-6">
-                        <button (click)="getViolationDetails(alert)"
-                                [disabled]="alert.isExpanding"
-                                class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-wait">
-                          @if (alert.isExpanding) {
-                            <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                            </svg>
-                            <span>Expanding...</span>
-                          } @else {
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-                              <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
-                            </svg>
-                            <span>Get Detailed Analysis</span>
-                          }
-                        </button>
-                      </div>
-
-                      @if (alert.detailedExplanation) {
-                        <div class="mt-4 p-4 bg-gray-950/50 border border-gray-700 rounded-md prose prose-sm max-w-none prose-invert"
-                            [innerHTML]="formatMessageText(alert.detailedExplanation)">
-                        </div>
-                      }
-                  </div>
-                }
-              </div>
-            }
-          }
-        </div>
-      }
+      @case ('details') { <app-case-details /> }
+      @case ('documents') { <app-document-viewer /> }
+      @case ('chat') { <app-chat /> }
+      @case ('timeline') { <app-timeline-editor /> }
+      @case ('actions') { <app-action-tracker /> }
+      @case ('evidence') { <app-evidence-log /> }
+      @case ('contacts') { <app-contact-log /> }
+      @case ('deadlines') { <app-deadline-calendar /> }
+      @case ('damages') { <app-damage-calculator /> }
+      @case ('violations') { <app-violation-analysis /> }
     }
   </section>
+
+  <!-- Settings Modal -->
+  @if (isSettingsOpen()) {
+    <div class="fixed inset-0 bg-black/60 z-40 flex items-center justify-center" (click)="toggleSettings()">
+      <div class="bg-gray-900 border border-gray-700 rounded-lg shadow-xl w-full max-w-md p-6" (click)="$event.stopPropagation()">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-xl font-bold text-white">Notification Settings</h2>
+          <button (click)="toggleSettings()" class="text-gray-400 hover:text-white">&times;</button>
+        </div>
+        <div class="space-y-4">
+          <div>
+            <label for="userEmail" class="block text-sm font-medium text-gray-300">Email Address for Alerts</label>
+            <input type="email" id="userEmail" [value]="userEmail()" (input)="handleSettingsInput('userEmail', $event)" placeholder="your.email@example.com" class="w-full mt-1 p-2 bg-gray-700 border border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500">
+            <p class="text-xs text-gray-500 mt-1">Simulated: Emails will appear as on-screen notifications.</p>
+          </div>
+          <div class="relative flex items-start">
+            <div class="flex h-6 items-center">
+              <input id="notifyOnViolations" type="checkbox" [checked]="notifyOnViolations()" (change)="handleSettingsInput('notifyOnViolations', $event)" class="h-4 w-4 rounded border-gray-500 bg-gray-700 text-blue-600 focus:ring-blue-600">
+            </div>
+            <div class="ml-3 text-sm leading-6">
+              <label for="notifyOnViolations" class="font-medium text-gray-300">Notify on new high-severity violations</label>
+              <p class="text-gray-400">Get an alert when the AI finds a new high-priority issue.</p>
+            </div>
+          </div>
+          <div class="relative flex items-start">
+            <div class="flex h-6 items-center">
+              <input id="notifyOnDeadlines" type="checkbox" [checked]="notifyOnDeadlines()" (change)="handleSettingsInput('notifyOnDeadlines', $event)" class="h-4 w-4 rounded border-gray-500 bg-gray-700 text-blue-600 focus:ring-blue-600">
+            </div>
+            <div class="ml-3 text-sm leading-6">
+              <label for="notifyOnDeadlines" class="font-medium text-gray-300">Notify on critical deadlines</label>
+              <p class="text-gray-400">Get an alert for critical deadlines within the next 30 days.</p>
+            </div>
+          </div>
+        </div>
+         <div class="mt-6 text-right">
+            <button (click)="toggleSettings()" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-500">Close</button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Toast Notifications Container -->
+  <div aria-live="assertive" class="pointer-events-none fixed inset-0 flex items-end px-4 py-6 sm:items-start sm:p-6 z-50">
+    <div class="flex w-full flex-col items-center space-y-4 sm:items-end">
+      @for (toast of notificationService.toasts(); track toast.id) {
+        <div class="pointer-events-auto w-full max-w-sm overflow-hidden rounded-lg bg-gray-800 shadow-lg ring-1 ring-black ring-opacity-5 border border-gray-700">
+          <div class="p-4">
+            <div class="flex items-start">
+              <div class="flex-shrink-0">
+                <svg class="h-6 w-6 text-blue-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25-2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
+                </svg>
+              </div>
+              <div class="ml-3 w-0 flex-1 pt-0.5">
+                <p class="text-sm font-medium text-gray-100">{{ toast.title }}</p>
+                <p class="mt-1 text-sm text-gray-400">{{ toast.message }}</p>
+              </div>
+              <div class="ml-4 flex flex-shrink-0">
+                <button (click)="notificationService.removeToast(toast.id)" type="button" class="inline-flex rounded-md bg-gray-800 text-gray-400 hover:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-800">
+                  <span class="sr-only">Close</span>
+                  <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" /></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
 
 </main>

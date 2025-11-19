@@ -1,0 +1,44 @@
+<div class="p-8 flex flex-col h-full overflow-hidden">
+  <header class="flex-shrink-0 mb-6 flex items-center justify-between">
+    <h2 class="text-3xl font-bold text-gray-100">Case Documents</h2>
+    <label class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-500 cursor-pointer">
+      <span>Add Document</span>
+      <input type="file" class="hidden" (change)="handleDocumentUpload($event)" accept=".txt,.md,.pdf,.doc,.docx">
+    </label>
+  </header>
+  
+  @if (selectedDocument() === null) {
+    <div class="flex-shrink-0 mb-4">
+      <input 
+        type="search" 
+        placeholder="Search documents by name or content..." 
+        class="w-full p-3 bg-gray-700 border border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none"
+        [value]="documentSearchQuery()"
+        (input)="handleSearchInput($event)">
+    </div>
+    <div class="flex-grow overflow-y-auto pr-2">
+      <ul class="space-y-2">
+        @for (doc of filteredDocuments(); track doc.id) {
+          <li (click)="selectDocument(doc)" class="bg-gray-900/50 p-4 rounded-md border border-gray-700 hover:border-blue-500 cursor-pointer transition-colors duration-200">
+            <p class="font-semibold text-blue-300">{{ doc.name }}</p>
+            <p class="text-xs text-gray-400">Uploaded: {{ doc.uploaded }}</p>
+          </li>
+        } @empty {
+          <div class="text-center py-12 border-2 border-dashed border-gray-700 rounded-lg">
+            <p class="text-gray-400">No documents found.</p>
+            <p class="text-sm text-gray-500">Add a document to get started.</p>
+          </div>
+        }
+      </ul>
+    </div>
+  } @else {
+    <div class="flex-grow flex flex-col bg-gray-900/50 rounded-lg border border-gray-700 overflow-hidden">
+      <header class="flex-shrink-0 p-4 bg-gray-950/70 flex items-center justify-between border-b border-gray-700">
+        <h3 class="font-semibold text-lg">{{ selectedDocument()?.name }}</h3>
+        <button (click)="selectDocument(null)" class="text-gray-400 hover:text-white">&times;</button>
+      </header>
+      <div class="flex-grow p-6 overflow-y-auto prose prose-invert max-w-none prose-sm" [innerHTML]="getHighlightedContent(selectedDocument()!.content)">
+      </div>
+    </div>
+  }
+</div>

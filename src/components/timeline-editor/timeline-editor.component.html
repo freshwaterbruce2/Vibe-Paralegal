@@ -1,0 +1,13 @@
+<div class="p-8 overflow-y-auto">
+  <h2 class="text-3xl font-bold mb-6 text-gray-100">Master Timeline</h2>
+   <div class="bg-gray-900/50 rounded-lg border border-gray-700 p-6">
+      <div class="prose prose-invert max-w-none mb-4">
+        <p>This is the master source of truth for your case. It contains every key date and event. The AI Paralegal uses this as its primary context. You can edit it below.</p>
+      </div>
+      <textarea 
+          class="w-full h-[60vh] p-3 bg-gray-950/50 border border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none resize-y text-gray-300 placeholder-gray-500 font-mono"
+          [value]="masterTimeline()"
+          (input)="handleTimelineInput($event)"
+      ></textarea>
+   </div>
+</div>

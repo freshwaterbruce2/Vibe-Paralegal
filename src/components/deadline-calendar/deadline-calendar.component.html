@@ -1,0 +1,32 @@
+<div class="p-8 overflow-y-auto">
+  <h2 class="text-3xl font-bold mb-6 text-gray-100">Deadline Calendar</h2>
+  <div class="bg-gray-900/50 rounded-lg border border-gray-700">
+    <table class="w-full text-left">
+      <thead class="bg-gray-800/50">
+        <tr>
+          <th class="p-4 font-semibold">Date</th>
+          <th class="p-4 font-semibold">What</th>
+          <th class="p-4 font-semibold">Action Required</th>
+          <th class="p-4 font-semibold">Status</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-700">
+        @for (deadline of deadlineCalendar(); track deadline.date) {
+          <tr [class.border-t-2]="deadline.isCritical" [class.border-red-500/50]="deadline.isCritical">
+            <td class="p-4 font-bold" [class.text-yellow-300]="deadline.status === 'TODAY'" [class.text-red-400]="deadline.status === 'CRITICAL'">{{ deadline.date }}</td>
+            <td class="p-4" [class.font-semibold]="deadline.isCritical">{{ deadline.what }}</td>
+            <td class="p-4">{{ deadline.action }}</td>
+            <td class="p-4">
+              @switch(deadline.status) {
+                @case('TODAY') { <span class="px-2 py-1 text-xs font-semibold bg-yellow-500/20 text-yellow-300 rounded-full">TODAY</span> }
+                @case('Pending') { <span class="px-2 py-1 text-xs font-semibold bg-gray-600/50 text-gray-300 rounded-full">Pending</span> }
+                @case('Future') { <span class="px-2 py-1 text-xs font-semibold bg-gray-700 text-gray-400 rounded-full">Future</span> }
+                @case('CRITICAL') { <span class="px-2 py-1 text-xs font-semibold bg-red-500/20 text-red-300 rounded-full">CRITICAL</span> }
+              }
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>

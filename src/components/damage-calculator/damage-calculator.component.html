@@ -1,0 +1,33 @@
+<div class="p-8 overflow-y-auto">
+  <h2 class="text-3xl font-bold mb-6 text-gray-100">Damage Calculator (Running Total)</h2>
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div class="bg-gray-900/50 rounded-lg border border-gray-700 p-6">
+        <label for="lostWages" class="text-lg font-semibold text-gray-300">Lost Wages</label>
+        <p class="text-sm text-gray-400 mb-4">$26.40/hr × 40 hrs/wk = $1,056/week</p>
+        <div class="flex items-center">
+            <span class="text-2xl text-gray-400 mr-2">$</span>
+            <input id="lostWages" type="number" step="100" class="w-full bg-transparent text-4xl font-bold text-green-400 outline-none" [value]="damageCalculator().lostWages" (input)="handleDamageInput('lostWages', $event)">
+        </div>
+    </div>
+     <div class="bg-gray-900/50 rounded-lg border border-gray-700 p-6">
+        <label for="insuranceCosts" class="text-lg font-semibold text-gray-300">Insurance Costs</label>
+         <p class="text-sm text-gray-400 mb-4">Private insurance premium payments</p>
+         <div class="flex items-center">
+            <span class="text-2xl text-gray-400 mr-2">$</span>
+            <input id="insuranceCosts" type="number" step="50" class="w-full bg-transparent text-4xl font-bold text-yellow-400 outline-none" [value]="damageCalculator().insuranceCosts" (input)="handleDamageInput('insuranceCosts', $event)">
+         </div>
+    </div>
+     <div class="bg-gray-900/50 rounded-lg border border-gray-700 p-6">
+        <label for="medicalExpenses" class="text-lg font-semibold text-gray-300">Medical Expenses</label>
+         <p class="text-sm text-gray-400 mb-4">Costs incurred while uninsured</p>
+         <div class="flex items-center">
+             <span class="text-2xl text-gray-400 mr-2">$</span>
+             <input id="medicalExpenses" type="number" step="50" class="w-full bg-transparent text-4xl font-bold text-orange-400 outline-none" [value]="damageCalculator().medicalExpenses" (input)="handleDamageInput('medicalExpenses', $event)">
+         </div>
+    </div>
+  </div>
+   <div class="mt-8 bg-gray-950/80 rounded-lg border-2 border-blue-500 p-6 flex items-center justify-between">
+      <h3 class="text-2xl font-bold text-gray-100">Grand Total Damages:</h3>
+      <p class="text-5xl font-bold text-blue-300">{{ totalDamages() | number:'1.2-2' }}</p>
+   </div>
+</div>
