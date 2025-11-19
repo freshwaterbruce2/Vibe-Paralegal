@@ -166,7 +166,8 @@ ${documentContext}
       insuranceStopDate: '~June 30, 2025 (DURING FMLA)', clearedToWorkDate: 'November 14, 2025',
       accommodationDeadline: 'November 22, 2025', eeocDeadline: 'May 10, 2026',
       violations: 'Temporary condition denial, No interactive process, Insurance terminated during FMLA, No notice of insurance termination, Religious accommodation pending',
-      caseValue: '$275,000-$625,000'
+      caseValue: '$275,000-$625,000',
+      caseSummary: ''
     };
   }
 

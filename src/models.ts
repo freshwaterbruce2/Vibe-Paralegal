@@ -56,6 +56,7 @@ export interface CaseDetails {
   eeocDeadline: string;
   violations: string;
   caseValue: string;
+  caseSummary: string;
 }
 
 export interface CaseDocument {

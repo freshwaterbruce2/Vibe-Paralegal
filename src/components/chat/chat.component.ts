@@ -71,6 +71,32 @@ export class ChatComponent implements AfterViewChecked {
     await this._executePrompt(fullPrompt, userMessage);
   }
 
+  formatMessageText(text: string): string {
+    // This is a simplified and safe markdown to HTML converter
+    let html = text
+      // 1. Escape HTML to prevent XSS attacks
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;')
+      // 2. Process Markdown-like syntax
+      // Bold (**text** or __text__)
+      .replace(/\*\*(.*?)\*\*|__(.*?)__/g, '<strong>$1$2</strong>')
+      // Italic (*text* or _text_)
+      .replace(/\*(.*?)\*|_(.*?)_/g, '<em>$1$2</em>')
+      // Lists - must be handled carefully. This handles simple lists at the start of a line.
+      .replace(/^\s*[\-\*]\s+(.*)/gm, '<li>$1</li>')
+      // Wrap list items in <ul> tags
+      .replace(/(<li>.*<\/li>)/gs, '<ul>$1</ul>')
+      // Merge consecutive <ul> tags
+      .replace(/<\/ul>\s*<ul>/g, '')
+      // 3. Convert newlines to <br> for paragraph breaks
+      .replace(/\n/g, '<br>');
+
+    return html;
+  }
+
   private async _executePrompt(prompt: string, userMessage: string) {
     if (this.loading()) return;
 
