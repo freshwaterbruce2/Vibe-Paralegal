@@ -40,7 +40,7 @@ export class ViolationAnalysisComponent {
       const responseText = await this.aiService.analyzeViolations(fullContext);
       const cleanedJson = responseText.replace(/^```json\n?/, '').replace(/\n?```$/, '');
       const newAlerts: ViolationAlert[] = JSON.parse(cleanedJson);
-      this.violationAlerts.set(newAlerts.map(a => ({ ...a, showInitialDetails: false })));
+      this.violationAlerts.set(newAlerts.map(a => ({ ...a, showInitialDetails: false, detailSearchQuery: '' })));
 
       // Check for new high-severity violations to notify user
       if (this.notifyOnViolations() && this.userEmail()) {
@@ -71,7 +71,7 @@ export class ViolationAnalysisComponent {
     this.violationAlerts.update(alerts => 
       alerts!.map(alert => 
         alert.title === alertToExpand.title 
-        ? { ...alert, isExpanding: true, detailedExplanation: '' } // Reset explanation for re-fetch
+        ? { ...alert, isExpanding: true, detailedExplanation: '', detailSearchQuery: '' } // Reset explanation and search for re-fetch
         : alert
       )
     );
@@ -128,7 +128,37 @@ export class ViolationAnalysisComponent {
     });
   }
 
-  formatMessageText(text: string): string {
-    return text.replace(/\n/g, '<br>');
+  handleViolationDetailSearch(alertToUpdate: ViolationAlert, event: Event) {
+    const query = (event.target as HTMLInputElement).value;
+    this.violationAlerts.update(alerts => {
+      if (!alerts) return null;
+      return alerts.map(alert =>
+        alert.title === alertToUpdate.title
+          ? { ...alert, detailSearchQuery: query }
+          : alert
+      );
+    });
+  }
+
+  getHighlightedViolationDetail(alert: ViolationAlert): string {
+    const content = alert.detailedExplanation || '';
+    const query = (alert.detailSearchQuery || '').trim();
+
+    // The prose class will handle whitespace, but replacing newlines with <br> ensures paragraph breaks are respected.
+    const formattedContent = content.replace(/\n/g, '<br>');
+
+    if (!query) {
+      return formattedContent;
+    }
+
+    try {
+      // Escape special characters for regex
+      const escapedQuery = query.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+      const regex = new RegExp(`(${escapedQuery})`, 'gi');
+      return formattedContent.replace(regex, `<mark class="bg-yellow-400 text-black px-1 rounded">$1</mark>`);
+    } catch (e) {
+      console.error("Error creating regex for highlighting:", e);
+      return formattedContent; // Return unhighlighted on error
+    }
   }
 }
