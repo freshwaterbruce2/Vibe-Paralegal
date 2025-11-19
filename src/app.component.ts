@@ -66,7 +66,15 @@ interface CaseDocument {
   uploaded: string;
 }
 
-type ActiveTab = 'details' | 'documents' | 'chat' | 'timeline' | 'actions' | 'evidence' | 'contacts' | 'deadlines' | 'damages';
+interface ViolationAlert {
+  title: string;
+  explanation: string;
+  severity: 'High' | 'Medium' | 'Low';
+  references: string[];
+  recommendations: string[];
+}
+
+type ActiveTab = 'details' | 'documents' | 'chat' | 'timeline' | 'actions' | 'evidence' | 'contacts' | 'deadlines' | 'damages' | 'violations';
 
 @Component({
   selector: 'app-root',
@@ -103,6 +111,10 @@ export class AppComponent implements AfterViewChecked {
   selectedDocument: WritableSignal<CaseDocument | null> = signal(null);
   documentSearchQuery: WritableSignal<string> = signal('');
   
+  // AI Analysis State
+  violationAlerts: WritableSignal<ViolationAlert[] | null> = signal(this.getInitialViolationAlerts());
+  analysisLoading: WritableSignal<boolean> = signal(false);
+
   // --- COMPUTED SIGNALS ---
   totalDamages: Signal<number> = computed(() => {
     const damages = this.damageCalculator();
@@ -150,6 +162,7 @@ export class AppComponent implements AfterViewChecked {
         this.shouldScrollToBottom = true;
     }
     this.selectedDocument.set(null); // Reset document view when changing tabs
+    this.error.set(null); // Clear errors when changing tabs
   }
 
   // --- EVENT HANDLERS ---
@@ -247,6 +260,28 @@ export class AppComponent implements AfterViewChecked {
     const userMessage = `Generate Action Plan${userRequest ? `: ${userRequest}` : ''}`;
 
     await this._executePrompt(fullPrompt, userMessage);
+  }
+
+  async analyzeForViolations() {
+    if (this.analysisLoading()) return;
+    this.analysisLoading.set(true);
+    this.error.set(null);
+    this.violationAlerts.set(null);
+
+    try {
+      const fullContext = this.getFullContext();
+      const responseText = await this.geminiService.analyzeViolations(fullContext);
+      const cleanedJson = responseText.replace(/^```json\n?/, '').replace(/\n?```$/, '');
+      const alerts: ViolationAlert[] = JSON.parse(cleanedJson);
+      this.violationAlerts.set(alerts);
+    } catch (e) {
+      console.error("Violation analysis failed:", e);
+      const errorMessage = 'An error occurred during violation analysis. The AI may have returned an invalid response. Please try again or check the console for details.';
+      this.error.set(errorMessage);
+      this.violationAlerts.set([]); // Set to empty to stop spinner
+    } finally {
+      this.analysisLoading.set(false);
+    }
   }
 
   private getFullContext(): string {
@@ -352,7 +387,8 @@ ${documentContext}
         contactLog: this.contactLog(),
         deadlineCalendar: this.deadlineCalendar(),
         damageCalculator: this.damageCalculator(),
-        documents: this.documents()
+        documents: this.documents(),
+        violationAlerts: this.violationAlerts()
       };
       localStorage.setItem('caseFileState', JSON.stringify(stateToSave));
     } catch (e) {
@@ -375,6 +411,7 @@ ${documentContext}
         this.deadlineCalendar.set(savedState.deadlineCalendar || this.getInitialDeadlineCalendar());
         this.damageCalculator.set(savedState.damageCalculator || this.getInitialDamageValues());
         this.documents.set(savedState.documents || this.getInitialDocuments());
+        this.violationAlerts.set(savedState.violationAlerts === undefined ? this.getInitialViolationAlerts() : savedState.violationAlerts);
       } else {
         // First time load, set initial state
         this.messages.set(this.getInitialMessages());
@@ -388,6 +425,10 @@ ${documentContext}
   // --- INITIAL DATA FACTORIES ---
   private getInitialMessages(): Message[] {
     return [{ role: 'model', text: 'Hello! This is your AI Paralegal Assistant. I have been briefed with your entire case file, including all documents. Ask me any questions or request an action plan.' }];
+  }
+
+  private getInitialViolationAlerts(): ViolationAlert[] | null {
+    return null;
   }
 
   private getInitialCaseDetails(): CaseDetails {

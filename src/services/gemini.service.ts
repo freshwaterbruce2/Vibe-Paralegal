@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { GoogleGenAI, Chat } from '@google/genai';
+import { GoogleGenAI, Chat, Type } from '@google/genai';
 
 // The Applet environment provides process.env.API_KEY.
 declare const process: any;
@@ -36,6 +36,50 @@ export class GeminiService {
         systemInstruction: `You are an expert paralegal specializing in South Carolina employment law, with deep knowledge of Walmart policies (like IDC 8980) and Sedgwick insurance policies. You will be provided with a complete case file, including core details, a master timeline, the full text of relevant documents, action trackers, and damage calculations. Your task is to analyze this comprehensive data to identify potential legal and policy violations and to suggest actionable steps. Always cite specific laws, policy sections, or document names when possible. Be professional, objective, and informative. Structure your responses clearly using markdown for readability.`
       }
     });
+  }
+
+  async analyzeViolations(context: string): Promise<string> {
+    if (!this.isInitialized || !this.genAI) {
+      throw new Error('Gemini Service is not initialized. Please check your API Key.');
+    }
+
+    const fullPrompt = `
+      You are an expert paralegal specializing in South Carolina employment law, Walmart policies, and Sedgwick policies.
+      Based on the complete case file provided below, analyze for any potential violations.
+      Identify each potential violation and provide a detailed explanation, severity, supporting references from the case file or law/policy, and recommended next actions.
+      Strictly structure your response as a JSON array of objects, adhering to the provided schema. If no violations are found, return an empty array [].
+
+      ---
+      CASE CONTEXT (FULL FILE):
+      ${context}
+      ---
+    `;
+
+    const schema = {
+      type: Type.ARRAY,
+      items: {
+        type: Type.OBJECT,
+        properties: {
+          title: { type: Type.STRING, description: 'A short, clear title for the potential violation.' },
+          explanation: { type: Type.STRING, description: 'A detailed explanation of the potential violation, citing facts from the case file.' },
+          severity: { type: Type.STRING, description: 'The estimated severity of the violation. Can be "High", "Medium", or "Low".' },
+          references: { type: Type.ARRAY, items: { type: Type.STRING }, description: 'A list of specific laws, policy numbers, or document names that support this finding.' },
+          recommendations: { type: Type.ARRAY, items: { type: Type.STRING }, description: 'A list of concrete, actionable next steps to address this potential violation.' },
+        },
+        required: ['title', 'explanation', 'severity', 'references', 'recommendations'],
+      },
+    };
+
+    const response = await this.genAI.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: fullPrompt,
+      config: {
+        responseMimeType: 'application/json',
+        responseSchema: schema,
+      }
+    });
+
+    return response.text;
   }
 
   async sendMessageStream(context: string, prompt: string) {

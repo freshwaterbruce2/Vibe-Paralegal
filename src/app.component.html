@@ -46,6 +46,10 @@
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" viewBox="0 0 20 20" fill="currentColor"><path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.5 2.5 0 00-1.134 0V7.418zM10 16.5a2.5 2.5 0 001.134 0v-1.698c-.155.103-.346.196-.567.267a.5.5 0 01-.567-.267v-1.698a2.5 2.5 0 00-1.134 0v1.698a.5.5 0 01.567.267c.22.07.412.164.567.267v1.698z" /><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm.5-14a.5.5 0 00-1 0V5a.5.5 0 001 0V4zM10 6.5A2.502 2.502 0 007.5 9v1.418a.5.5 0 01-.567.424c-.22.07-.412.164-.567.267a2.5 2.5 0 000 2.782c.155.103.347.196.567.267a.5.5 0 01.567.424V15.5a2.5 2.5 0 005 0v-1.418a.5.5 0 01.567-.424c.22-.07.412.164-.567-.267a2.5 2.5 0 000-2.782c-.155-.103-.347-.196-.567-.267a.5.5 0 01-.567-.424V9A2.502 2.502 0 0010 6.5zm0 1.5a1 1 0 100 2 1 1 0 000-2z" clip-rule="evenodd" /></svg>
         Damage Calculator
       </button>
+      <button (click)="setActiveTab('violations')" [class.bg-blue-600/20]="activeTab() === 'violations'" [class.text-blue-300]="activeTab() === 'violations'" [class.hover:bg-gray-800/60]="activeTab() !== 'violations'" class="flex items-center px-4 py-2 rounded-md text-gray-300 transition-colors duration-200 w-full text-left">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8.257 3.099c.625-1.096 2.26-1.096 2.886 0l5.58 9.79c.64 1.12-1.84 2.18-2.44 1.12L10 6.32l-4.283 7.69c-.6 1.06-3.08.001-2.44-1.12l5.58-9.79zM10 14a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" /></svg>
+        Violation Analysis
+      </button>
     </nav>
   </aside>
 
@@ -376,6 +380,89 @@
               <h3 class="text-2xl font-bold text-gray-100">Grand Total Damages:</h3>
               <p class="text-5xl font-bold text-blue-300">{{ totalDamages() | number:'1.2-2' }}</p>
            </div>
+        </div>
+      }
+      @case ('violations') {
+        <div class="p-8 overflow-y-auto">
+          <header class="flex items-center justify-between mb-6">
+            <h2 class="text-3xl font-bold text-gray-100">AI Violation Analysis</h2>
+            <button (click)="analyzeForViolations()" 
+                    [disabled]="analysisLoading()"
+                    class="bg-blue-600 text-white px-5 py-2 rounded-md hover:bg-blue-500 disabled:bg-blue-800 disabled:cursor-wait transition-colors flex items-center">
+              @if (analysisLoading()) {
+                <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Analyzing...
+              } @else {
+                <span>Analyze Case for Violations</span>
+              }
+            </button>
+          </header>
+      
+          @if (error() && activeTab() === 'violations') {
+            <div class="bg-red-500/20 border border-red-500 text-red-300 px-4 py-3 rounded-md mb-6" role="alert">
+              <p><strong>Analysis Failed:</strong> {{ error() }}</p>
+            </div>
+          }
+      
+          @if (analysisLoading()) {
+            <div class="text-center py-12 border-2 border-dashed border-gray-700 rounded-lg">
+              <p class="text-gray-400 text-lg">AI is analyzing the entire case file...</p>
+              <p class="text-sm text-gray-500 mt-2">This may take a moment. The system is cross-referencing documents, timelines, and legal/policy data.</p>
+            </div>
+          } @else {
+            @if (violationAlerts() === null) {
+              <div class="text-center py-12 border-2 border-dashed border-gray-700 rounded-lg bg-gray-900/30">
+                <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto h-12 w-12 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
+                <h3 class="mt-2 text-lg font-medium text-gray-200">Ready to Analyze</h3>
+                <p class="mt-1 text-sm text-gray-400">Click the "Analyze Case for Violations" button to start the AI-driven analysis.</p>
+              </div>
+            } @else if (violationAlerts()!.length === 0) {
+              <div class="text-center py-12 border-2 border-dashed border-green-500/30 bg-green-900/20 rounded-lg">
+                 <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto h-12 w-12 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                <h3 class="mt-2 text-lg font-medium text-green-300">No Potential Violations Found</h3>
+                <p class="mt-1 text-sm text-gray-400">Based on the provided information, the AI did not identify any immediate potential violations.</p>
+              </div>
+            } @else {
+              <div class="space-y-6">
+                @for (alert of violationAlerts(); track alert.title) {
+                  <div class="bg-gray-900/50 rounded-lg border-l-4 p-6"
+                       [class.border-red-500]="alert.severity === 'High'"
+                       [class.border-orange-500]="alert.severity === 'Medium'"
+                       [class.border-yellow-500]="alert.severity === 'Low'">
+                      <div class="flex items-center justify-between">
+                          <h3 class="text-xl font-bold text-gray-100">{{ alert.title }}</h3>
+                          <span class="px-3 py-1 text-xs font-semibold rounded-full"
+                                [class.bg-red-500/20]="alert.severity === 'High'" [class.text-red-300]="alert.severity === 'High'"
+                                [class.bg-orange-500/20]="alert.severity === 'Medium'" [class.text-orange-300]="alert.severity === 'Medium'"
+                                [class.bg-yellow-500/20]="alert.severity === 'Low'" [class.text-yellow-300]="alert.severity === 'Low'">
+                              {{ alert.severity }} Severity
+                          </span>
+                      </div>
+                      <div class="mt-4 prose prose-sm max-w-none prose-invert">
+                        <p>{{ alert.explanation }}</p>
+      
+                        <h4 class="font-semibold text-gray-300 mt-4">Supporting Evidence & References:</h4>
+                        <ul>
+                          @for (ref of alert.references; track ref) {
+                            <li>{{ ref }}</li>
+                          }
+                        </ul>
+      
+                        <h4 class="font-semibold text-gray-300 mt-4">Recommended Actions:</h4>
+                        <ul>
+                          @for (rec of alert.recommendations; track rec) {
+                            <li>{{ rec }}</li>
+                          }
+                        </ul>
+                      </div>
+                  </div>
+                }
+              </div>
+            }
+          }
         </div>
       }
     }
