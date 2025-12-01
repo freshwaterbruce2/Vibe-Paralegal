@@ -78,4 +78,4 @@ export interface ViolationAlert {
   detailSearchQuery?: string;
 }
 
-export type ActiveTab = 'details' | 'documents' | 'chat' | 'timeline' | 'actions' | 'evidence' | 'contacts' | 'deadlines' | 'damages' | 'violations';
+export type ActiveTab = 'details' | 'documents' | 'chat' | 'timeline' | 'actions' | 'evidence' | 'contacts' | 'deadlines' | 'damages' | 'violations' | 'analyzer';

@@ -1,5 +1,7 @@
 {
   "name": "Copy of AI Paralegal Assistant",
   "description": "An AI-powered paralegal assistant to help analyze case documents and emails based on South Carolina employment law, Walmart, and Sedgwick policies.",
-  "requestFramePermissions": []
+  "requestFramePermissions": [
+    "camera"
+  ]
 }

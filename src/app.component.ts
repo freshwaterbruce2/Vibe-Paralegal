@@ -15,6 +15,7 @@ import { ContactLogComponent } from './components/contact-log/contact-log.compon
 import { DeadlineCalendarComponent } from './components/deadline-calendar/deadline-calendar.component';
 import { DamageCalculatorComponent } from './components/damage-calculator/damage-calculator.component';
 import { ViolationAnalysisComponent } from './components/violation-analysis/violation-analysis.component';
+import { FileAnalyzerComponent } from './components/file-analyzer/file-analyzer.component';
 
 @Component({
   selector: 'app-root',
@@ -31,7 +32,8 @@ import { ViolationAnalysisComponent } from './components/violation-analysis/viol
     ContactLogComponent,
     DeadlineCalendarComponent,
     DamageCalculatorComponent,
-    ViolationAnalysisComponent
+    ViolationAnalysisComponent,
+    FileAnalyzerComponent
   ]
 })
 export class AppComponent {

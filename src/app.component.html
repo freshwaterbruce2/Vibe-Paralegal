@@ -18,6 +18,13 @@
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd" /></svg>
         Documents
       </button>
+      <button (click)="setActiveTab('analyzer')" [class.bg-blue-600/20]="activeTab() === 'analyzer'" [class.text-blue-300]="activeTab() === 'analyzer'" [class.hover:bg-gray-800/60]="activeTab() !== 'analyzer'" class="flex items-center px-4 py-2 rounded-md text-gray-300 transition-colors duration-200 w-full text-left">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" viewBox="0 0 20 20" fill="currentColor">
+          <path d="M10 2a1 1 0 00-1 1v1a1 1 0 002 0V3a1 1 0 00-1-1zM4 6a1 1 0 011-1h1a1 1 0 010 2H5a1 1 0 01-1-1zm12 0a1 1 0 00-1-1h-1a1 1 0 100 2h1a1 1 0 001-1zM4.657 8.11a1 1 0 00-1.414 1.414l.707.707a1 1 0 001.414-1.414l-.707-.707zm11.393 2.828a1 1 0 10-1.414-1.414l-.707.707a1 1 0 001.414 1.414l.707-.707zM10 16a1 1 0 01-1 1H4a1 1 0 110-2h5a1 1 0 011 1zm5-1a1 1 0 00-1-1h-1a1 1 0 100 2h1a1 1 0 001-1z" />
+          <path fill-rule="evenodd" d="M3 10a7 7 0 1114 0 7 7 0 01-14 0zm7-5a5 5 0 00-5 5h10a5 5 0 00-5-5z" clip-rule="evenodd" />
+        </svg>
+        File Analyzer
+      </button>
        <button (click)="setActiveTab('chat')" [class.bg-blue-600/20]="activeTab() === 'chat'" [class.text-blue-300]="activeTab() === 'chat'" [class.hover:bg-gray-800/60]="activeTab() !== 'chat'" class="flex items-center px-4 py-2 rounded-md text-gray-300 transition-colors duration-200 w-full text-left">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.083-3.083A6.984 6.984 0 012 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM4.79 14.243A6.975 6.975 0 014 10c0-3.309 3.134-6 7-6s7 2.691 7 6-3.134 6-7 6a7.735 7.735 0 01-2.21-.336L4.79 14.243z" clip-rule="evenodd" /></svg>
         AI Paralegal
@@ -72,6 +79,7 @@
     @switch (activeTab()) {
       @case ('details') { <app-case-details /> }
       @case ('documents') { <app-document-viewer /> }
+      @case ('analyzer') { <app-file-analyzer /> }
       @case ('chat') { <app-chat /> }
       @case ('timeline') { <app-timeline-editor /> }
       @case ('actions') { <app-action-tracker /> }

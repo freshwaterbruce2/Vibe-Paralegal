@@ -29,6 +29,55 @@ export class AiService {
     }
   }
 
+  async *extractTextFromImageStream(base64Image: string): AsyncGenerator<{ text: string }> {
+    if (!this.isInitialized) {
+      throw new Error('AI Service is not initialized. Please check your API Key.');
+    }
+
+    const systemPrompt = `You are an expert OCR (Optical Character Recognition) engine. Your task is to accurately extract all text from the provided image. Preserve the original formatting, including line breaks and paragraphs, as closely as possible. Do not add any commentary, interpretation, or extra text. Only return the extracted text from the image.`;
+
+    const response = await fetch(API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${this.apiKey}`,
+      },
+      body: JSON.stringify({
+        model: MODEL_NAME,
+        messages: [
+          {
+            role: 'system',
+            content: systemPrompt
+          },
+          {
+            role: 'user',
+            content: [
+              {
+                type: 'text',
+                text: 'Extract the text from this document image.'
+              },
+              {
+                type: 'image_url',
+                image_url: {
+                  url: base64Image
+                }
+              }
+            ]
+          }
+        ],
+        stream: true,
+      }),
+    });
+    
+    if (!response.ok || !response.body) {
+      const errorBody = await response.text();
+      console.error('Deepseek API Error:', errorBody);
+      throw new Error(`API request failed with status ${response.status}`);
+    }
+
+    yield* this.processStream(response);
+  }
+
   async analyzeViolations(context: string): Promise<string> {
     if (!this.isInitialized) {
       throw new Error('AI Service is not initialized. Please check your API Key.');
@@ -122,36 +171,7 @@ If no violations are found, return an empty array [].`;
       throw new Error(`API request failed with status ${response.status}`);
     }
 
-    const reader = response.body.getReader();
-    const decoder = new TextDecoder();
-    let buffer = '';
-
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-
-      buffer += decoder.decode(value, { stream: true });
-      const lines = buffer.split('\n');
-      buffer = lines.pop() || '';
-
-      for (const line of lines) {
-        if (line.startsWith('data: ')) {
-          const data = line.substring(6).trim();
-          if (data === '[DONE]') {
-            return;
-          }
-          try {
-            const json = JSON.parse(data);
-            const content = json.choices?.[0]?.delta?.content;
-            if (content) {
-              yield { text: content };
-            }
-          } catch (e) {
-            console.error('Error parsing stream chunk:', data, e);
-          }
-        }
-      }
-    }
+    yield* this.processStream(response);
   }
 
   async *generateCaseSummaryStream(context: string): AsyncGenerator<{ text: string }> {
@@ -191,36 +211,7 @@ If no violations are found, return an empty array [].`;
       throw new Error(`API request failed with status ${response.status}`);
     }
 
-    const reader = response.body.getReader();
-    const decoder = new TextDecoder();
-    let buffer = '';
-
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-
-      buffer += decoder.decode(value, { stream: true });
-      const lines = buffer.split('\n');
-      buffer = lines.pop() || '';
-
-      for (const line of lines) {
-        if (line.startsWith('data: ')) {
-          const data = line.substring(6).trim();
-          if (data === '[DONE]') {
-            return;
-          }
-          try {
-            const json = JSON.parse(data);
-            const content = json.choices?.[0]?.delta?.content;
-            if (content) {
-              yield { text: content };
-            }
-          } catch (e) {
-            console.error('Error parsing stream chunk:', data, e);
-          }
-        }
-      }
-    }
+    yield* this.processStream(response);
   }
 
   async *sendMessageStream(context: string, prompt: string): AsyncGenerator<{ text: string }> {
@@ -261,35 +252,39 @@ If no violations are found, return an empty array [].`;
       throw new Error(`API request failed with status ${response.status}`);
     }
 
-    const reader = response.body.getReader();
-    const decoder = new TextDecoder();
-    let buffer = '';
+    yield* this.processStream(response);
+  }
+  
+  private async *processStream(response: Response): AsyncGenerator<{ text: string }> {
+      const reader = response.body!.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
 
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
 
-      buffer += decoder.decode(value, { stream: true });
-      const lines = buffer.split('\n');
-      buffer = lines.pop() || '';
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || '';
 
-      for (const line of lines) {
-        if (line.startsWith('data: ')) {
-          const data = line.substring(6).trim();
-          if (data === '[DONE]') {
-            return;
-          }
-          try {
-            const json = JSON.parse(data);
-            const content = json.choices?.[0]?.delta?.content;
-            if (content) {
-              yield { text: content };
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            const data = line.substring(6).trim();
+            if (data === '[DONE]') {
+              return;
             }
-          } catch (e) {
-            console.error('Error parsing stream chunk:', data, e);
+            try {
+              const json = JSON.parse(data);
+              const content = json.choices?.[0]?.delta?.content;
+              if (content) {
+                yield { text: content };
+              }
+            } catch (e) {
+              console.error('Error parsing stream chunk:', data, e);
+            }
           }
         }
       }
-    }
   }
 }
