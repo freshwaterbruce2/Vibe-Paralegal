@@ -67,15 +67,48 @@ export interface CaseDocument {
 }
 
 export interface ViolationAlert {
+  // --- Persistent Data ---
   title: string;
-  explanation:string;
+  explanation: string;
   severity: 'High' | 'Medium' | 'Low';
   references: string[];
   recommendations: string[];
-  detailedExplanation?: string;
-  isExpanding?: boolean;
+  detailedExplanation?: string; // This IS persistent, fetched from AI
+
+  // --- Transient UI State (should NOT be saved/exported) ---
+  isFetchingDetails?: boolean;
+  isDetailedAnalysisVisible?: boolean;
   showInitialDetails?: boolean;
   detailSearchQuery?: string;
 }
 
-export type ActiveTab = 'details' | 'documents' | 'chat' | 'timeline' | 'actions' | 'evidence' | 'contacts' | 'deadlines' | 'damages' | 'violations' | 'analyzer';
+// --- FAMILY LAW MODELS ---
+export interface FamilyLawCaseDetails {
+  caseNumber: string;
+  county: string;
+  opposingParty: string;
+  opposingCounsel: string;
+}
+
+export interface KeyIssue {
+  id: number;
+  name: string;
+  status: 'Pending' | 'Resolved' | 'Disputed' | 'In Progress';
+}
+
+export interface FamilyLawEvent {
+  date: string;
+  description: string;
+  type: 'Hearing' | 'Mediation' | 'Deadline' | 'Meeting';
+}
+
+export interface FinancialLogEntry {
+  id: number;
+  date: string;
+  description: string;
+  amount: number;
+  type: 'Child Support' | 'Alimony' | 'Legal Fees' | 'Other';
+}
+
+
+export type ActiveTab = 'details' | 'documents' | 'chat' | 'timeline' | 'actions' | 'evidence' | 'contacts' | 'deadlines' | 'damages' | 'violations' | 'analyzer' | 'family' | 'mobile-upload';

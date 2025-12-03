@@ -1,21 +1,13 @@
 import { computed, effect, Injectable, signal, Signal, WritableSignal } from '@angular/core';
 import {
-  CaseDetails,
-  CaseDocument,
-  ChecklistItem,
-  Contact,
-  DamageValues,
-  Deadline,
-  Message,
-  ViolationAlert
+  CaseDetails, CaseDocument, ChecklistItem, Contact, DamageValues, Deadline,
+  Message, ViolationAlert, FamilyLawCaseDetails, KeyIssue, FamilyLawEvent, FinancialLogEntry
 } from '../models';
 
 @Injectable({ providedIn: 'root' })
 export class CaseDataService {
-  // Chat State
+  // --- STATE SIGNALS ---
   messages: WritableSignal<Message[]> = signal<Message[]>([]);
-  
-  // Case Data State
   caseDetails: WritableSignal<CaseDetails> = signal(this.getInitialCaseDetails());
   masterTimeline: WritableSignal<string> = signal(this.getInitialMasterTimeline());
   actionTracker: WritableSignal<ChecklistItem[]> = signal(this.getInitialActionTracker());
@@ -24,12 +16,15 @@ export class CaseDataService {
   contactLog: WritableSignal<Contact[]> = signal(this.getInitialContactLog());
   deadlineCalendar: WritableSignal<Deadline[]> = signal(this.getInitialDeadlineCalendar());
   damageCalculator: WritableSignal<DamageValues> = signal(this.getInitialDamageValues());
-
-  // Document State
   documents: WritableSignal<CaseDocument[]> = signal(this.getInitialDocuments());
+  violationAlerts: WritableSignal<ViolationAlert[]> = signal([]);
+  
+  // Family Law State
+  familyLawDetails: WritableSignal<FamilyLawCaseDetails> = signal(this.getInitialFamilyLawDetails());
+  familyLawKeyIssues: WritableSignal<KeyIssue[]> = signal(this.getInitialFamilyLawKeyIssues());
+  familyLawEvents: WritableSignal<FamilyLawEvent[]> = signal(this.getInitialFamilyLawEvents());
+  familyLawFinancialLog: WritableSignal<FinancialLogEntry[]> = signal([]);
 
-  // AI Analysis State
-  violationAlerts: WritableSignal<ViolationAlert[] | null> = signal(this.getInitialViolationAlerts());
 
   // --- COMPUTED SIGNALS ---
   totalDamages: Signal<number> = computed(() => {
@@ -49,6 +44,7 @@ export class CaseDataService {
     const details = this.caseDetails();
     const damages = this.damageCalculator();
     const totalDamages = this.totalDamages();
+    const familyDetails = this.familyLawDetails();
 
     const formatChecklist = (title: string, items: ChecklistItem[]) =>
       `${title}:\n${items.map(i => `- [${i.checked ? 'X' : ' '}] ${i.text}`).join('\n')}`;
@@ -58,8 +54,12 @@ export class CaseDataService {
     return `
 # COMPLETE CASE FILE OVERVIEW
 
-## Core Case Details
+## Core Employment Case Details
 ${Object.entries(details).map(([key, value]) => `- ${key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}: ${value}`).join('\n')}
+
+## Core Family Law Case Details
+${Object.entries(familyDetails).map(([key, value]) => `- ${key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}: ${value}`).join('\n')}
+- Key Issues: ${this.familyLawKeyIssues().map(i => `${i.name} (${i.status})`).join(', ')}
 
 ## Master Timeline
 ${this.masterTimeline()}
@@ -73,6 +73,8 @@ ${formatChecklist('Evidence We Need To Get', this.evidenceNeed())}
 
 ## Deadlines
 ${this.deadlineCalendar().map(d => `- ${d.date}: ${d.what} (${d.status})`).join('\n')}
+${this.familyLawEvents().map(d => `- ${d.date}: ${d.description} (${d.type})`).join('\n')}
+
 
 ## Damage Calculation
 - Lost Wages: $${damages.lostWages.toFixed(2)}
@@ -99,8 +101,14 @@ ${documentContext}
         deadlineCalendar: this.deadlineCalendar(),
         damageCalculator: this.damageCalculator(),
         documents: this.documents(),
-        // Don't save transient UI state like isExpanding or detailedExplanation
-        violationAlerts: this.violationAlerts()?.map(({ isExpanding, detailedExplanation, ...rest }) => rest), 
+        // FIX: Persist detailedExplanation but strip transient UI state
+        violationAlerts: this.violationAlerts()?.map(({ 
+            isFetchingDetails, isDetailedAnalysisVisible, showInitialDetails, detailSearchQuery, ...rest 
+        }) => rest),
+        familyLawDetails: this.familyLawDetails(),
+        familyLawKeyIssues: this.familyLawKeyIssues(),
+        familyLawEvents: this.familyLawEvents(),
+        familyLawFinancialLog: this.familyLawFinancialLog(),
       };
       localStorage.setItem('caseFileState', JSON.stringify(stateToSave));
     } catch (e) {
@@ -123,16 +131,13 @@ ${documentContext}
         this.deadlineCalendar.set(savedState.deadlineCalendar || this.getInitialDeadlineCalendar());
         this.damageCalculator.set(savedState.damageCalculator || this.getInitialDamageValues());
         this.documents.set(savedState.documents || this.getInitialDocuments());
-        this.violationAlerts.set(savedState.violationAlerts === undefined ? this.getInitialViolationAlerts() : savedState.violationAlerts);
+        this.violationAlerts.set(savedState.violationAlerts || []);
         
-        // Load settings into app component signals from old state if they exist
-        // Note: new settings logic will handle saving separately in app component
-        const appState = {
-            userEmail: savedState.userEmail,
-            notifyOnDeadlines: savedState.notifyOnDeadlines,
-            notifyOnViolations: savedState.notifyOnViolations
-        };
-        localStorage.setItem('caseAppSettings', JSON.stringify(appState));
+        // Load family law data
+        this.familyLawDetails.set(savedState.familyLawDetails || this.getInitialFamilyLawDetails());
+        this.familyLawKeyIssues.set(savedState.familyLawKeyIssues || this.getInitialFamilyLawKeyIssues());
+        this.familyLawEvents.set(savedState.familyLawEvents || this.getInitialFamilyLawEvents());
+        this.familyLawFinancialLog.set(savedState.familyLawFinancialLog || []);
 
       } else {
         // First time load, set initial state
@@ -147,10 +152,6 @@ ${documentContext}
   // --- INITIAL DATA FACTORIES ---
   private getInitialMessages(): Message[] {
     return [{ role: 'model', text: 'Hello! This is your AI Paralegal Assistant. I have been briefed with your entire case file, including all documents. Ask me any questions or request an action plan.' }];
-  }
-
-  private getInitialViolationAlerts(): ViolationAlert[] | null {
-    return null;
   }
 
   private getInitialCaseDetails(): CaseDetails {
@@ -170,6 +171,31 @@ ${documentContext}
       caseSummary: ''
     };
   }
+  
+  private getInitialFamilyLawDetails(): FamilyLawCaseDetails {
+    return {
+      caseNumber: '',
+      county: 'Clarendon',
+      opposingParty: '',
+      opposingCounsel: ''
+    };
+  }
+
+  private getInitialFamilyLawKeyIssues(): KeyIssue[] {
+    return [
+        { id: 1, name: 'Child Custody', status: 'Pending' },
+        { id: 2, name: 'Child Support', status: 'Pending' },
+        { id: 3, name: 'Alimony/Spousal Support', status: 'Pending' },
+        { id: 4, name: 'Division of Assets', status: 'Pending' }
+    ];
+  }
+  
+  private getInitialFamilyLawEvents(): FamilyLawEvent[] {
+    return [
+      { date: 'YYYY-MM-DD', description: 'Initial Hearing', type: 'Hearing' }
+    ];
+  }
+
 
   private getInitialMasterTimeline(): string {
     return `## MASTER TIMELINE

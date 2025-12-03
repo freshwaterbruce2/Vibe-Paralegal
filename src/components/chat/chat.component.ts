@@ -2,6 +2,8 @@ import { ChangeDetectionStrategy, Component, inject, signal, WritableSignal, Ele
 import { CommonModule } from '@angular/common';
 import { CaseDataService } from '../../services/case-data.service';
 import { AiService } from '../../services/ai.service';
+import { PromptService } from '../../services/prompt.service';
+import { SanitizationService } from '../../services/sanitization.service';
 
 @Component({
   selector: 'app-chat',
@@ -14,6 +16,8 @@ export class ChatComponent implements AfterViewChecked {
 
   caseDataService = inject(CaseDataService);
   aiService = inject(AiService);
+  promptService = inject(PromptService);
+  sanitizer = inject(SanitizationService);
 
   // UI State
   loading = signal(false);
@@ -55,54 +59,26 @@ export class ChatComponent implements AfterViewChecked {
   async sendMessage() {
     const prompt = this.chatPrompt().trim();
     if (!prompt) return;
-    await this._executePrompt(prompt, prompt);
+    await this._executePrompt(this.promptService.forGeneralChat(this.caseDataService.getFullContext(), prompt), prompt);
   }
 
   async generateActionPlan() {
     const userRequest = this.chatPrompt().trim();
-    const actionPlanBasePrompt = 'Based on the entire case file provided (including case details, documents, timeline, trackers, and financial data), generate a detailed, step-by-step action plan. For each step, explain the action, its purpose, and any relevant deadlines or legal/policy citations.';
-    
-    const fullPrompt = userRequest
-      ? `${actionPlanBasePrompt} The user has provided the following specific focus for this plan: "${userRequest}"`
-      : actionPlanBasePrompt;
-    
+    const actionPlanPrompt = `Generate a detailed, step-by-step action plan based on the entire case file. Focus on these user priorities: ${userRequest || 'all aspects of the case'}.`;
     const userMessage = `Generate Action Plan${userRequest ? `: ${userRequest}` : ''}`;
-
-    await this._executePrompt(fullPrompt, userMessage);
+    await this._executePrompt(this.promptService.forGeneralChat(this.caseDataService.getFullContext(), actionPlanPrompt), userMessage);
   }
 
   async analyzePolicies() {
     const userMessage = 'Analyze case documents for Sedgwick/Walmart policy violations.';
-    
-    const policyAnalysisPrompt = `Analyze ONLY the content of the provided case documents. Disregard other parts of the case file like the timeline or damage calculator for this specific request. Identify any potential violations or deviations from Sedgwick and Walmart corporate policies, with a special focus on procedures related to leave of absence and the continuation/termination of insurance benefits. Frame your analysis within the context of South Carolina employment law. For each potential violation found, cite the specific document(s) that serve as evidence and explain your reasoning clearly using markdown.`;
-
+    const policyAnalysisPrompt = this.promptService.forPolicyAdherence(this.caseDataService.documents().map(d => d.content).join('\n\n'));
     await this._executePrompt(policyAnalysisPrompt, userMessage);
   }
 
-  formatMessageText(text: string): string {
-    // This is a simplified and safe markdown to HTML converter
-    let html = text
-      // 1. Escape HTML to prevent XSS attacks
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#039;')
-      // 2. Process Markdown-like syntax
-      // Bold (**text** or __text__)
-      .replace(/\*\*(.*?)\*\*|__(.*?)__/g, '<strong>$1$2</strong>')
-      // Italic (*text* or _text_)
-      .replace(/\*(.*?)\*|_(.*?)_/g, '<em>$1$2</em>')
-      // Lists - must be handled carefully. This handles simple lists at the start of a line.
-      .replace(/^\s*[\-\*]\s+(.*)/gm, '<li>$1</li>')
-      // Wrap list items in <ul> tags
-      .replace(/(<li>.*<\/li>)/gs, '<ul>$1</ul>')
-      // Merge consecutive <ul> tags
-      .replace(/<\/ul>\s*<ul>/g, '')
-      // 3. Convert newlines to <br> for paragraph breaks
-      .replace(/\n/g, '<br>');
-
-    return html;
+  async analyzeFamilyLawCase() {
+    const userMessage = 'Analyze the Family Law aspects of the case.';
+    const familyLawPrompt = this.promptService.forFamilyLawAnalysis(this.caseDataService.getFullContext());
+    await this._executePrompt(familyLawPrompt, userMessage);
   }
 
   private async _executePrompt(prompt: string, userMessage: string) {
@@ -118,7 +94,8 @@ export class ChatComponent implements AfterViewChecked {
 
     try {
       const fullContext = this.caseDataService.getFullContext();
-      const stream = this.aiService.sendMessageStream(fullContext, prompt);
+      // Note: The prompt passed in already has context, so we pass an empty context to the service
+      const stream = this.aiService.sendMessageStream('', prompt);
 
       for await (const chunk of stream) {
         const chunkText = chunk.text;
@@ -131,19 +108,15 @@ export class ChatComponent implements AfterViewChecked {
         });
         this.shouldScrollToBottom = true;
       }
-    } catch (e) {
-      console.error(e);
-      const errorMessage = 'An error occurred. Please check the browser console for details.';
+    } catch (e: any) {
+      const errorMessage = e.message || 'An error occurred. Please check the console.';
       this.error.set(errorMessage);
-      this.messages.update(m => {
+       this.messages.update(m => {
         const lastMessage = m[m.length - 1];
-        if (lastMessage && lastMessage.role === 'model' && lastMessage.text === '') {
-           return m.slice(0, m.length - 1);
+        if (lastMessage?.role === 'model') {
+           lastMessage.text = `Error: ${errorMessage}`;
         }
-        if (lastMessage) {
-            lastMessage.text = errorMessage;
-        }
-        return [...m];
+        return m;
       });
     } finally {
       this.loading.set(false);

@@ -3,9 +3,10 @@ import { CommonModule } from '@angular/common';
 import { CaseDataService } from './services/case-data.service';
 import { NotificationService } from './services/notification.service';
 import { AiService } from './services/ai.service';
-import { ActiveTab } from './models';
+import { SettingsService } from './services/settings.service';
+import { ActiveTab, ViolationAlert } from './models';
 
-// Import all new feature components
+// Import all feature components
 import { CaseDetailsComponent } from './components/case-details/case-details.component';
 import { DocumentViewerComponent } from './components/document-viewer/document-viewer.component';
 import { ChatComponent } from './components/chat/chat.component';
@@ -17,6 +18,9 @@ import { DeadlineCalendarComponent } from './components/deadline-calendar/deadli
 import { DamageCalculatorComponent } from './components/damage-calculator/damage-calculator.component';
 import { ViolationAnalysisComponent } from './components/violation-analysis/violation-analysis.component';
 import { FileAnalyzerComponent } from './components/file-analyzer/file-analyzer.component';
+import { FamilyLawComponent } from './components/family-law/family-law.component';
+import { MobileUploadComponent } from './components/mobile-upload/mobile-upload.component';
+
 
 @Component({
   selector: 'app-root',
@@ -34,37 +38,28 @@ import { FileAnalyzerComponent } from './components/file-analyzer/file-analyzer.
     DeadlineCalendarComponent,
     DamageCalculatorComponent,
     ViolationAnalysisComponent,
-    FileAnalyzerComponent
+    FileAnalyzerComponent,
+    FamilyLawComponent,
+    MobileUploadComponent
   ]
 })
 export class AppComponent {
   caseDataService = inject(CaseDataService);
   notificationService = inject(NotificationService);
-  aiService = inject(AiService);
+  settings = inject(SettingsService);
   
   // --- UI STATE SIGNALS ---
-  activeTab: WritableSignal<ActiveTab> = signal('details');
-  
-  // Settings State
+  activeTab: WritableSignal<ActiveTab>;
   isSettingsOpen = signal(false);
-  userEmail = signal('');
-  notifyOnDeadlines = signal(true);
-  notifyOnViolations = signal(true);
-  deepseekApiKey = signal('');
 
   constructor() {
-    this.loadSettingsFromLocalStorage();
-    this.checkDeadlinesOnLoad();
-    
-    // Auto-save settings changes to local storage
-    effect(() => {
-      this.saveSettingsToLocalStorage();
-    });
+    // Determine initial view: main app or mobile upload page
+    const isMobileUpload = new URLSearchParams(window.location.search).has('mobile-upload');
+    this.activeTab = signal(isMobileUpload ? 'mobile-upload' : 'details');
 
-    // Automatically update the AI service when the API key changes
-    effect(() => {
-      this.aiService.setApiKey(this.deepseekApiKey());
-    });
+    if (!isMobileUpload) {
+        this.checkDeadlinesOnLoad();
+    }
   }
 
   setActiveTab(tab: ActiveTab) {
@@ -79,16 +74,20 @@ export class AppComponent {
   handleSettingsInput(field: 'userEmail' | 'notifyOnDeadlines' | 'notifyOnViolations' | 'deepseekApiKey', event: Event) {
     const input = event.target as HTMLInputElement;
     if (field === 'userEmail' || field === 'deepseekApiKey') {
-      const signal = this[field];
-      (signal as WritableSignal<string>).set(input.value);
+      this.settings[field].set(input.value);
     } else {
-      const signal = this[field];
-      (signal as WritableSignal<boolean>).set(input.checked);
+      this.settings[field].set(input.checked);
     }
   }
 
   exportCaseFile() {
     try {
+      // Create a clean, persistent-only version of violation alerts for export
+      const cleanViolationAlerts = this.caseDataService.violationAlerts()?.map(alert => {
+          const { isFetchingDetails, isDetailedAnalysisVisible, showInitialDetails, detailSearchQuery, ...persistentData } = alert;
+          return persistentData;
+      });
+
       const caseData = {
         caseDetails: this.caseDataService.caseDetails(),
         masterTimeline: this.caseDataService.masterTimeline(),
@@ -99,8 +98,12 @@ export class AppComponent {
         deadlineCalendar: this.caseDataService.deadlineCalendar(),
         damageCalculator: this.caseDataService.damageCalculator(),
         documents: this.caseDataService.documents(),
-        violationAlerts: this.caseDataService.violationAlerts()?.map(({ isExpanding, detailedExplanation, showInitialDetails, detailSearchQuery, ...rest }) => rest), // Don't save transient state
+        violationAlerts: cleanViolationAlerts,
         chatHistory: this.caseDataService.messages(),
+        familyLawDetails: this.caseDataService.familyLawDetails(),
+        familyLawKeyIssues: this.caseDataService.familyLawKeyIssues(),
+        familyLawEvents: this.caseDataService.familyLawEvents(),
+        familyLawFinancialLog: this.caseDataService.familyLawFinancialLog(),
       };
 
       const jsonData = JSON.stringify(caseData, null, 2);
@@ -116,48 +119,16 @@ export class AppComponent {
       URL.revokeObjectURL(url);
     } catch (e) {
       console.error("Failed to export case file:", e);
-      this.notificationService.notify('Export Failed', 'Could not generate the case file. Please check the console.', this.userEmail() || 'error-log');
+      this.notificationService.addToast('Export Failed', 'Could not generate the case file.', 'error');
     }
-  }
-
-  private saveSettingsToLocalStorage() {
-     try {
-       const settings = {
-         userEmail: this.userEmail(),
-         notifyOnDeadlines: this.notifyOnDeadlines(),
-         notifyOnViolations: this.notifyOnViolations(),
-         deepseekApiKey: this.deepseekApiKey()
-       };
-       localStorage.setItem('caseAppSettings', JSON.stringify(settings));
-     } catch (e) {
-       console.error("Failed to save settings to local storage", e);
-     }
-  }
-
-  private loadSettingsFromLocalStorage() {
-      try {
-        const savedSettingsJSON = localStorage.getItem('caseAppSettings');
-        if (savedSettingsJSON) {
-            const settings = JSON.parse(savedSettingsJSON);
-            this.userEmail.set(settings.userEmail || '');
-            this.notifyOnDeadlines.set(settings.notifyOnDeadlines !== false); // default true
-            this.notifyOnViolations.set(settings.notifyOnViolations !== false); // default true
-            this.deepseekApiKey.set(settings.deepseekApiKey || '');
-        }
-      } catch (e) {
-        console.error("Failed to load settings from local storage", e);
-      }
   }
 
   private checkDeadlinesOnLoad() {
-    if (!this.notifyOnDeadlines() || !this.userEmail()) {
+    if (!this.settings.notifyOnDeadlines() || !this.settings.userEmail()) {
       return;
     }
     
-    // Use sessionStorage to ensure we only notify once per session
-    if (sessionStorage.getItem('deadlineNotified')) {
-      return;
-    }
+    if (sessionStorage.getItem('deadlineNotified')) return;
 
     const today = new Date();
     const thirtyDaysFromNow = new Date();
@@ -171,7 +142,7 @@ export class AppComponent {
     if (upcomingDeadlines.length > 0) {
       const subject = `Upcoming Critical Deadline Alert for Case ${this.caseDataService.caseDetails().win}`;
       const body = `You have ${upcomingDeadlines.length} critical deadline(s) approaching within the next 30 days:\n\n${upcomingDeadlines.map(d => `- ${d.date}: ${d.what}`).join('\n')}\n\nPlease review the Deadline Calendar for details.`;
-      this.notificationService.notify(subject, body, this.userEmail());
+      this.notificationService.notify(subject, body, this.settings.userEmail());
       sessionStorage.setItem('deadlineNotified', 'true');
     }
   }

@@ -1,273 +1,137 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { ViolationAlert } from '../models';
+import { SettingsService } from './settings.service';
+import { NotificationService } from './notification.service';
+import { PromptService } from './prompt.service';
 
 const API_URL = 'https://api.deepseek.com/v1/chat/completions';
 const MODEL_NAME = 'deepseek-chat';
 
 @Injectable({ providedIn: 'root' })
 export class AiService {
-  private apiKey = '';
+  private settings = inject(SettingsService);
+  private notificationService = inject(NotificationService);
+  private promptService = inject(PromptService);
 
-  /**
-   * Updates the API key used by the service. This is the primary way
-   * the service gets its key, usually from a user setting.
-   * @param newApiKey The new Deepseek API key.
-   */
-  public setApiKey(newApiKey: string) {
-    this.apiKey = newApiKey;
-    if (!this.apiKey) {
-        console.warn("AI Service API key has been cleared.");
-    }
+  private get apiKey() {
+    return this.settings.deepseekApiKey();
   }
-
-  /**
-   * Checks if the API key is available before making a request.
-   * Throws an error or returns false for streams if the key is missing.
-   * @param isStream - If true, returns a boolean instead of throwing.
-   * @returns boolean indicating if the service is ready.
-   */
+  
   private isReady(isStream = false): boolean {
     if (!this.apiKey) {
       const errorMessage = 'Deepseek API Key is not set. Please add it in the Settings panel.';
-      console.error(errorMessage);
-      if (!isStream) {
-        throw new Error(errorMessage);
+      if (isStream) {
+        // For streams, we yield an error message directly.
+        return false;
       }
-      return false;
+      this.notificationService.addToast('Authentication Error', errorMessage, 'error');
+      throw new Error(errorMessage);
     }
     return true;
   }
 
-  async *extractTextFromImageStream(base64Image: string): AsyncGenerator<{ text: string }> {
-    if (!this.isReady(true)) {
-      yield { text: 'ERROR: Deepseek API Key is not set. Please add it in the Settings panel.' };
-      return;
-    }
-
-    const systemPrompt = `You are an expert OCR (Optical Character Recognition) engine. Your task is to accurately extract all text from the provided image. Preserve the original formatting, including line breaks and paragraphs, as closely as possible. Do not add any commentary, interpretation, or extra text. Only return the extracted text from the image.`;
-
-    const response = await fetch(API_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${this.apiKey}`,
-      },
-      body: JSON.stringify({
-        model: MODEL_NAME,
-        messages: [
-          {
-            role: 'system',
-            content: systemPrompt
-          },
-          {
-            role: 'user',
-            content: [
-              {
-                type: 'text',
-                text: 'Extract the text from this document image.'
-              },
-              {
-                type: 'image_url',
-                image_url: {
-                  url: base64Image
-                }
-              }
-            ]
-          }
-        ],
-        stream: true,
-      }),
-    });
-    
-    if (!response.ok || !response.body) {
-      const errorBody = await response.text();
-      console.error('Deepseek API Error:', errorBody);
-      throw new Error(`API request failed with status ${response.status}`);
-    }
-
-    yield* this.processStream(response);
+  private async handleErrorResponse(response: Response): Promise<string> {
+    const errorBody = await response.json().catch(() => ({ error: { message: response.statusText } }));
+    const errorMessage = errorBody.error?.message || `API request failed with status ${response.status}`;
+    this.notificationService.addToast('API Error', errorMessage, 'error');
+    console.error('Deepseek API Error:', errorMessage, errorBody);
+    return errorMessage;
   }
-
+  
   async analyzeViolations(context: string): Promise<string> {
     this.isReady();
-
-    const systemPrompt = `You are an expert paralegal specializing in South Carolina law, with deep expertise in both Family Law and Employment Law. You also have a deep focus on Walmart's corporate policies (especially regarding leave of absence and insurance benefits) and Sedgwick's claims administration policies.
-Analyze the provided case file for potential violations across all areas of your expertise.
-Identify each potential violation and provide a detailed explanation, severity, supporting references, and recommended actions.
-You must respond with a valid JSON array of objects. Each object must have the following properties: "title", "explanation", "severity", "references", and "recommendations".
-If no violations are found, return an empty array [].`;
-
-    const userPrompt = `
-      ---
-      CASE CONTEXT (FULL FILE):
-      ${context}
-      ---
-    `;
+    const { system, user } = this.promptService.forViolationAnalysis(context);
 
     try {
       const response = await fetch(API_URL, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.apiKey}`,
-        },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${this.apiKey}` },
         body: JSON.stringify({
           model: MODEL_NAME,
-          messages: [
-            { role: 'system', content: systemPrompt },
-            { role: 'user', content: userPrompt }
-          ],
+          messages: [{ role: 'system', content: system }, { role: 'user', content: user }],
           response_format: { type: 'json_object' }
         }),
       });
 
       if (!response.ok) {
-        const errorBody = await response.text();
-        console.error('Deepseek API Error:', errorBody);
-        throw new Error(`API request failed with status ${response.status}: ${response.statusText}`);
+        const errorMessage = await this.handleErrorResponse(response);
+        throw new Error(errorMessage);
       }
 
       const data = await response.json();
-      // The actual response might be nested, so we ensure we get the string content.
       const content = data.choices[0]?.message?.content;
-      if (typeof content !== 'string') {
-        throw new Error('Invalid JSON response format from API.');
+      if (typeof content !== 'string') throw new Error('Invalid JSON response format from API.');
+      
+      // The API often wraps the JSON in a "violations" key, so we need to extract it.
+      try {
+        const parsed = JSON.parse(content);
+        return JSON.stringify(parsed.violations || parsed);
+      } catch {
+        return content; // Return as-is if parsing fails
       }
-      return content;
 
     } catch (error) {
-      console.error('Error calling Deepseek API for violation analysis:', error);
+      console.error('Error in analyzeViolations:', error);
       throw error;
     }
   }
-  
+
   async *getViolationDetailsStream(context: string, violation: ViolationAlert): AsyncGenerator<{ text: string }> {
     if (!this.isReady(true)) {
-      yield { text: 'ERROR: Deepseek API Key is not set. Please add it in the Settings panel.' };
+      yield { text: `ERROR: ${this.handleErrorResponse({} as Response)}` };
       return;
     }
-    
-    const systemPrompt = `You are an expert paralegal specializing in South Carolina law, with deep expertise in both Family Law and Employment Law. You also have a deep focus on Walmart's corporate policies (especially regarding leave of absence and insurance benefits) and Sedgwick's claims administration policies. You will be provided with a full case file and a specific potential violation that you have previously identified. Your task is to provide a more detailed, in-depth analysis of THIS SPECIFIC violation. Do not repeat the initial explanation, but expand upon it with greater detail.`;
-    
-    const userPrompt = `
-      ---
-      CASE CONTEXT (FULL FILE):
-      ${context}
-      ---
-      USER REQUEST:
-      I am reviewing the following potential violation you previously identified:
-      
-      Title: "${violation.title}"
-      Initial Explanation: "${violation.explanation}"
-      
-      Please provide a more detailed, in-depth analysis of THIS SPECIFIC violation. Expand upon the initial explanation. Detail the specific statutes (e.g., FMLA Section 2614(c)(1), ADA requirements for interactive process), company policies, or legal precedents that apply here. Explain exactly how the events described in the case file might constitute a breach of these rules. Provide a deeper context for the recommended actions. Use markdown for clear formatting.
-    `;
-
-    const response = await fetch(API_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${this.apiKey}`,
-      },
-      body: JSON.stringify({
-        model: MODEL_NAME,
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt }
-        ],
-        stream: true,
-      }),
-    });
-
-    if (!response.ok || !response.body) {
-      const errorBody = await response.text();
-      console.error('Deepseek API Error:', errorBody);
-      throw new Error(`API request failed with status ${response.status}`);
-    }
-
-    yield* this.processStream(response);
+    const userPrompt = this.promptService.forViolationDetail(context, violation);
+    const systemPrompt = this.promptService.getBaseSystemPrompt();
+    yield* this.streamRequest(systemPrompt, userPrompt);
   }
 
   async *generateCaseSummaryStream(context: string): AsyncGenerator<{ text: string }> {
     if (!this.isReady(true)) {
-      yield { text: 'ERROR: Deepseek API Key is not set. Please add it in the Settings panel.' };
+      yield { text: `ERROR: ${this.handleErrorResponse({} as Response)}` };
       return;
     }
-
-    const systemPrompt = `You are an expert paralegal specializing in South Carolina law, with deep expertise in both Family Law and Employment Law. Your task is to generate a concise, professional summary of the provided case file. The summary should be a single, well-written paragraph. It should highlight the key facts, the primary legal issues (like potential FMLA, ADA, or family law violations), and the current status of the case. Do not use markdown or lists; provide a clean paragraph of text.`;
-
-    const userPrompt = `
-      ---
-      CASE CONTEXT (FULL FILE):
-      ${context}
-      ---
-      Please generate the case summary based on the context above.
-    `;
-    
-    const response = await fetch(API_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${this.apiKey}`,
-      },
-      body: JSON.stringify({
-        model: MODEL_NAME,
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt }
-        ],
-        stream: true,
-      }),
-    });
-
-    if (!response.ok || !response.body) {
-      const errorBody = await response.text();
-      console.error('Deepseek API Error:', errorBody);
-      throw new Error(`API request failed with status ${response.status}`);
-    }
-
-    yield* this.processStream(response);
+    const userPrompt = this.promptService.forExecutiveSummary(context);
+    const systemPrompt = this.promptService.getBaseSystemPrompt(); // Note: forSummary has its own detailed system prompt.
+    yield* this.streamRequest(systemPrompt, userPrompt);
   }
 
   async *sendMessageStream(context: string, prompt: string): AsyncGenerator<{ text: string }> {
     if (!this.isReady(true)) {
-      yield { text: 'ERROR: Deepseek API Key is not set. Please add it in the Settings panel.' };
+      yield { text: `ERROR: ${this.handleErrorResponse({} as Response)}` };
       return;
     }
-    
-    const systemPrompt = `You are an expert paralegal specializing in South Carolina law, with deep expertise in both Family Law and Employment Law. You have deep knowledge of Walmart's corporate policies (including leave of absence, accommodation, and insurance benefits like policy IDC 8980) and Sedgwick's insurance and claims administration policies. You will be provided with a complete case file, including core details, a master timeline, the full text of relevant documents, action trackers, and damage calculations. Your task is to analyze this comprehensive data to identify potential legal and policy violations and to suggest actionable steps across both legal domains. Always cite specific laws, policy sections, or document names when possible. Be professional, objective, and informative. Structure your responses clearly using markdown for readability.`;
-    
-    const userPrompt = `
-      ---
-      CASE CONTEXT (FULL FILE):
-      ${context || 'No context provided.'}
-      ---
-      USER QUERY:
-      ${prompt}
-    `;
+    const userPrompt = this.promptService.forGeneralChat(context, prompt);
+    const systemPrompt = this.promptService.getBaseSystemPrompt();
+    yield* this.streamRequest(systemPrompt, userPrompt);
+  }
 
+  async *analyzeOcrTextStream(ocrText: string): AsyncGenerator<{ text: string }> {
+      if (!this.isReady(true)) {
+          yield { text: `ERROR: ${this.handleErrorResponse({} as Response)}` };
+          return;
+      }
+      const userPrompt = this.promptService.forOcrAnalysis(ocrText);
+      const systemPrompt = this.promptService.getBaseSystemPrompt();
+      yield* this.streamRequest(systemPrompt, userPrompt);
+  }
+
+  private async *streamRequest(systemPrompt: string, userPrompt: string): AsyncGenerator<{ text: string }> {
     const response = await fetch(API_URL, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${this.apiKey}`,
-      },
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${this.apiKey}` },
       body: JSON.stringify({
         model: MODEL_NAME,
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt }
-        ],
+        messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: userPrompt }],
         stream: true,
       }),
     });
 
     if (!response.ok || !response.body) {
-      const errorBody = await response.text();
-      console.error('Deepseek API Error:', errorBody);
-      throw new Error(`API request failed with status ${response.status}`);
+      const errorMsg = await this.handleErrorResponse(response);
+      yield { text: `API Error: ${errorMsg}` };
+      return;
     }
-
     yield* this.processStream(response);
   }
   
@@ -287,15 +151,11 @@ If no violations are found, return an empty array [].`;
         for (const line of lines) {
           if (line.startsWith('data: ')) {
             const data = line.substring(6).trim();
-            if (data === '[DONE]') {
-              return;
-            }
+            if (data === '[DONE]') return;
             try {
               const json = JSON.parse(data);
               const content = json.choices?.[0]?.delta?.content;
-              if (content) {
-                yield { text: content };
-              }
+              if (content) yield { text: content };
             } catch (e) {
               console.error('Error parsing stream chunk:', data, e);
             }

@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, inject, signal, Signal, W
 import { CommonModule } from '@angular/common';
 import { CaseDataService } from '../../services/case-data.service';
 import { NotificationService } from '../../services/notification.service';
+import { HighlightService } from '../../services/highlight.service';
 import { CaseDocument } from '../../models';
 
 @Component({
@@ -13,6 +14,7 @@ import { CaseDocument } from '../../models';
 export class DocumentViewerComponent {
   caseDataService = inject(CaseDataService);
   notificationService = inject(NotificationService);
+  highlightService = inject(HighlightService);
   documents = this.caseDataService.documents;
 
   // Local UI State
@@ -28,6 +30,12 @@ export class DocumentViewerComponent {
     );
   });
 
+  highlightedContent: Signal<string> = computed(() => {
+    const doc = this.selectedDocument();
+    if (!doc) return '';
+    return this.highlightService.highlight(doc.content, this.documentSearchQuery());
+  });
+
   async handleDocumentUpload(event: Event) {
     const files = (event.target as HTMLInputElement).files;
     if (!files || files.length === 0) return;
@@ -36,7 +44,6 @@ export class DocumentViewerComponent {
     let failedCount = 0;
 
     for (const file of Array.from(files)) {
-      // Basic check for supported file types
       if (!file.type.startsWith('text/') && !file.name.endsWith('.md')) {
         console.warn(`Skipping unsupported file type: ${file.name} (${file.type})`);
         failedCount++;
@@ -61,7 +68,6 @@ export class DocumentViewerComponent {
         this.documents.update(docs => [...docs, ...newDocuments]);
     }
 
-    // Provide consolidated feedback
     if (newDocuments.length > 0 && failedCount === 0) {
       this.notificationService.addToast('Import Successful', `Successfully imported ${newDocuments.length} document(s).`, 'success');
     } else if (newDocuments.length > 0 && failedCount > 0) {
@@ -70,7 +76,6 @@ export class DocumentViewerComponent {
        this.notificationService.addToast('Import Failed', `Could not import ${failedCount} document(s). See console for details.`, 'error');
     }
 
-    // Reset file input
     (event.target as HTMLInputElement).value = '';
   }
 
@@ -80,13 +85,5 @@ export class DocumentViewerComponent {
 
   handleSearchInput(event: Event) {
     this.documentSearchQuery.set((event.target as HTMLInputElement).value);
-  }
-
-  getHighlightedContent(content: string): string {
-    const query = this.documentSearchQuery().trim();
-    if (!query) return content.replace(/\n/g, '<br>');
-
-    const regex = new RegExp(`(${query.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')})`, 'gi');
-    return content.replace(regex, `<mark class="bg-yellow-400 text-black px-1 rounded">$1</mark>`).replace(/\n/g, '<br>');
   }
 }

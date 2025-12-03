@@ -1,0 +1,28 @@
+<div class="flex flex-col items-center justify-center h-screen bg-gray-800 p-8 text-center">
+  @if (!uploadSuccess()) {
+    <div class="w-full max-w-md">
+      <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto h-16 w-16 text-blue-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+      </svg>
+      <h1 class="text-2xl font-bold text-white">Upload Document</h1>
+      <p class="text-gray-400 mt-2 mb-6">Select an image from your device. It will be sent securely to the AI Paralegal Assistant on your desktop.</p>
+      
+      <label class="w-full inline-block bg-blue-600 text-white px-6 py-4 rounded-lg font-semibold text-lg hover:bg-blue-500 cursor-pointer transition-colors duration-200">
+        @if (uploading()) {
+          <span>Uploading...</span>
+        } @else {
+          <span>Select Image</span>
+        }
+        <input type="file" class="hidden" (change)="handleImageUpload($event)" accept="image/*" [disabled]="uploading()">
+      </label>
+    </div>
+  } @else {
+    <div class="w-full max-w-md">
+       <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto h-16 w-16 text-green-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+      <h1 class="text-2xl font-bold text-white">Upload Successful</h1>
+      <p class="text-gray-400 mt-2">You can now close this window and return to your desktop to see the analyzed document.</p>
+    </div>
+  }
+</div>
