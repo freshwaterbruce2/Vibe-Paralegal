@@ -71,6 +71,14 @@ export class ChatComponent implements AfterViewChecked {
     await this._executePrompt(fullPrompt, userMessage);
   }
 
+  async analyzePolicies() {
+    const userMessage = 'Analyze case documents for Sedgwick/Walmart policy violations.';
+    
+    const policyAnalysisPrompt = `Analyze ONLY the content of the provided case documents. Disregard other parts of the case file like the timeline or damage calculator for this specific request. Identify any potential violations or deviations from Sedgwick and Walmart corporate policies, with a special focus on procedures related to leave of absence and the continuation/termination of insurance benefits. Frame your analysis within the context of South Carolina employment law. For each potential violation found, cite the specific document(s) that serve as evidence and explain your reasoning clearly using markdown.`;
+
+    await this._executePrompt(policyAnalysisPrompt, userMessage);
+  }
+
   formatMessageText(text: string): string {
     // This is a simplified and safe markdown to HTML converter
     let html = text

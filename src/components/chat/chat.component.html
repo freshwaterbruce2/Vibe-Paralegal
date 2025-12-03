@@ -32,7 +32,7 @@
 }
 
 <div class="p-6 border-t border-gray-700 bg-gray-900/50">
-  <form class="flex items-center space-x-4" (submit)="$event.preventDefault(); sendMessage()">
+  <form class="flex items-end space-x-2" (submit)="$event.preventDefault(); sendMessage()">
     <textarea
       class="flex-grow p-3 bg-gray-700 border border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none resize-none text-gray-200 placeholder-gray-400 disabled:opacity-50"
       placeholder="Ask a question or describe the focus of your action plan..."
@@ -51,6 +51,17 @@
     >
       <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
         <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+      </svg>
+    </button>
+    <button
+      type="button"
+      (click)="analyzePolicies()"
+      class="bg-gray-600 text-gray-200 p-3 rounded-md hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-blue-500 disabled:bg-gray-700 disabled:cursor-not-allowed transition-colors duration-200"
+      [disabled]="loading()"
+      title="Analyze Documents for Policy Violations"
+    >
+       <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
       </svg>
     </button>
     <button
