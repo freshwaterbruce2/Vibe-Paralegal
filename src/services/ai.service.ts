@@ -91,8 +91,8 @@ export class AiService {
   async analyzeViolations(context: string): Promise<string> {
     this.isReady();
 
-    const systemPrompt = `You are an expert paralegal specializing in South Carolina employment law, with a deep focus on Walmart's corporate policies (especially regarding leave of absence and insurance benefits) and Sedgwick's claims administration policies.
-Analyze the provided case file for potential violations.
+    const systemPrompt = `You are an expert paralegal specializing in South Carolina law, with deep expertise in both Family Law and Employment Law. You also have a deep focus on Walmart's corporate policies (especially regarding leave of absence and insurance benefits) and Sedgwick's claims administration policies.
+Analyze the provided case file for potential violations across all areas of your expertise.
 Identify each potential violation and provide a detailed explanation, severity, supporting references, and recommended actions.
 You must respond with a valid JSON array of objects. Each object must have the following properties: "title", "explanation", "severity", "references", and "recommendations".
 If no violations are found, return an empty array [].`;
@@ -147,7 +147,7 @@ If no violations are found, return an empty array [].`;
       return;
     }
     
-    const systemPrompt = `You are an expert paralegal specializing in South Carolina employment law, with a deep focus on Walmart's corporate policies (especially regarding leave of absence and insurance benefits) and Sedgwick's claims administration policies. You will be provided with a full case file and a specific potential violation that you have previously identified. Your task is to provide a more detailed, in-depth analysis of THIS SPECIFIC violation. Do not repeat the initial explanation, but expand upon it with greater detail.`;
+    const systemPrompt = `You are an expert paralegal specializing in South Carolina law, with deep expertise in both Family Law and Employment Law. You also have a deep focus on Walmart's corporate policies (especially regarding leave of absence and insurance benefits) and Sedgwick's claims administration policies. You will be provided with a full case file and a specific potential violation that you have previously identified. Your task is to provide a more detailed, in-depth analysis of THIS SPECIFIC violation. Do not repeat the initial explanation, but expand upon it with greater detail.`;
     
     const userPrompt = `
       ---
@@ -194,7 +194,7 @@ If no violations are found, return an empty array [].`;
       return;
     }
 
-    const systemPrompt = `You are an expert paralegal specializing in South Carolina employment law. Your task is to generate a concise, professional summary of the provided case file, viewing it through the lens of potential Walmart and Sedgwick policy violations, particularly concerning leave of absence and insurance. The summary should be a single, well-written paragraph. It should highlight the key facts, the primary legal issues (like potential FMLA or ADA violations), and the current status of the case. Do not use markdown or lists; provide a clean paragraph of text.`;
+    const systemPrompt = `You are an expert paralegal specializing in South Carolina law, with deep expertise in both Family Law and Employment Law. Your task is to generate a concise, professional summary of the provided case file. The summary should be a single, well-written paragraph. It should highlight the key facts, the primary legal issues (like potential FMLA, ADA, or family law violations), and the current status of the case. Do not use markdown or lists; provide a clean paragraph of text.`;
 
     const userPrompt = `
       ---
@@ -235,7 +235,7 @@ If no violations are found, return an empty array [].`;
       return;
     }
     
-    const systemPrompt = `You are an expert paralegal specializing in South Carolina employment law, with deep knowledge of Walmart's corporate policies (including leave of absence, accommodation, and insurance benefits like policy IDC 8980) and Sedgwick's insurance and claims administration policies. You will be provided with a complete case file, including core details, a master timeline, the full text of relevant documents, action trackers, and damage calculations. Your task is to analyze this comprehensive data to identify potential legal and policy violations and to suggest actionable steps. Always cite specific laws, policy sections, or document names when possible. Be professional, objective, and informative. Structure your responses clearly using markdown for readability.`;
+    const systemPrompt = `You are an expert paralegal specializing in South Carolina law, with deep expertise in both Family Law and Employment Law. You have deep knowledge of Walmart's corporate policies (including leave of absence, accommodation, and insurance benefits like policy IDC 8980) and Sedgwick's insurance and claims administration policies. You will be provided with a complete case file, including core details, a master timeline, the full text of relevant documents, action trackers, and damage calculations. Your task is to analyze this comprehensive data to identify potential legal and policy violations and to suggest actionable steps across both legal domains. Always cite specific laws, policy sections, or document names when possible. Be professional, objective, and informative. Structure your responses clearly using markdown for readability.`;
     
     const userPrompt = `
       ---
