@@ -58,11 +58,11 @@
           <div class="flex flex-col bg-gray-950/50 rounded-lg border border-gray-700">
             <div class="p-4 border-b border-gray-700 flex-shrink-0 flex items-center justify-between">
               <h3 class="text-lg font-semibold">Extracted Text</h3>
-              <button (click)="addTextToDocuments()" [disabled]="loading() || !extractedText()" class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-500 disabled:opacity-50">Add to Case Documents</button>
+              <button (click)="promptForDocumentName()" [disabled]="loading() || !extractedText()" class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-500 disabled:opacity-50">Add to Case Documents</button>
             </div>
             <div class="p-4 flex-grow relative overflow-y-auto">
               @if(loading()) {
-                 <div class="absolute inset-0 flex flex-col items-center justify-center bg-gray-950/80">
+                 <div class="absolute inset-0 flex flex-col items-center justify-center bg-gray-950/80 z-10">
                     <svg class="animate-spin h-8 w-8 text-white mb-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -89,3 +89,28 @@
     }
   </div>
 </div>
+
+<!-- Naming Modal -->
+@if(isNamingDocument()) {
+  <div class="fixed inset-0 bg-black/60 z-40 flex items-center justify-center" (click)="cancelNaming()">
+    <div class="bg-gray-900 border border-gray-700 rounded-lg shadow-xl w-full max-w-md p-6" (click)="$event.stopPropagation()">
+      <h2 class="text-xl font-bold text-white mb-4">Name Your Document</h2>
+      <p class="text-sm text-gray-400 mb-4">Provide a clear and descriptive name for this document before adding it to your case file.</p>
+      <div>
+        <label for="documentName" class="sr-only">Document Name</label>
+        <input 
+          type="text" 
+          id="documentName" 
+          [value]="newDocumentName()" 
+          (input)="handleNewDocumentNameInput($event)"
+          (keydown.enter)="confirmAddDocument()"
+          placeholder="e.g., Denial Letter from Sedgwick 07-14-2025.txt" 
+          class="w-full mt-1 p-2 bg-gray-700 border border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500">
+      </div>
+      <div class="mt-6 flex justify-end space-x-4">
+        <button (click)="cancelNaming()" class="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-500">Cancel</button>
+        <button (click)="confirmAddDocument()" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-500">Save Document</button>
+      </div>
+    </div>
+  </div>
+}

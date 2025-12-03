@@ -1,37 +1,47 @@
 import { Injectable } from '@angular/core';
 import { ViolationAlert } from '../models';
 
-// The Applet environment provides process.env.API_KEY.
-declare const process: any;
-
 const API_URL = 'https://api.deepseek.com/v1/chat/completions';
 const MODEL_NAME = 'deepseek-chat';
 
 @Injectable({ providedIn: 'root' })
 export class AiService {
   private apiKey = '';
-  private isInitialized = false;
 
-  constructor() {
-    this.initialize();
-  }
-  
-  private initialize() {
-    try {
-      if (process && process.env && process.env.API_KEY) {
-        this.apiKey = process.env.API_KEY;
-        this.isInitialized = true;
-      } else {
-        console.error("API_KEY environment variable not set.");
-      }
-    } catch (e) {
-      console.error("Failed to initialize AiService", e);
+  /**
+   * Updates the API key used by the service. This is the primary way
+   * the service gets its key, usually from a user setting.
+   * @param newApiKey The new Deepseek API key.
+   */
+  public setApiKey(newApiKey: string) {
+    this.apiKey = newApiKey;
+    if (!this.apiKey) {
+        console.warn("AI Service API key has been cleared.");
     }
   }
 
+  /**
+   * Checks if the API key is available before making a request.
+   * Throws an error or returns false for streams if the key is missing.
+   * @param isStream - If true, returns a boolean instead of throwing.
+   * @returns boolean indicating if the service is ready.
+   */
+  private isReady(isStream = false): boolean {
+    if (!this.apiKey) {
+      const errorMessage = 'Deepseek API Key is not set. Please add it in the Settings panel.';
+      console.error(errorMessage);
+      if (!isStream) {
+        throw new Error(errorMessage);
+      }
+      return false;
+    }
+    return true;
+  }
+
   async *extractTextFromImageStream(base64Image: string): AsyncGenerator<{ text: string }> {
-    if (!this.isInitialized) {
-      throw new Error('AI Service is not initialized. Please check your API Key.');
+    if (!this.isReady(true)) {
+      yield { text: 'ERROR: Deepseek API Key is not set. Please add it in the Settings panel.' };
+      return;
     }
 
     const systemPrompt = `You are an expert OCR (Optical Character Recognition) engine. Your task is to accurately extract all text from the provided image. Preserve the original formatting, including line breaks and paragraphs, as closely as possible. Do not add any commentary, interpretation, or extra text. Only return the extracted text from the image.`;
@@ -79,9 +89,7 @@ export class AiService {
   }
 
   async analyzeViolations(context: string): Promise<string> {
-    if (!this.isInitialized) {
-      throw new Error('AI Service is not initialized. Please check your API Key.');
-    }
+    this.isReady();
 
     const systemPrompt = `You are an expert paralegal specializing in South Carolina employment law, with a deep focus on Walmart's corporate policies (especially regarding leave of absence and insurance benefits) and Sedgwick's claims administration policies.
 Analyze the provided case file for potential violations.
@@ -120,7 +128,12 @@ If no violations are found, return an empty array [].`;
       }
 
       const data = await response.json();
-      return data.choices[0].message.content;
+      // The actual response might be nested, so we ensure we get the string content.
+      const content = data.choices[0]?.message?.content;
+      if (typeof content !== 'string') {
+        throw new Error('Invalid JSON response format from API.');
+      }
+      return content;
 
     } catch (error) {
       console.error('Error calling Deepseek API for violation analysis:', error);
@@ -129,8 +142,9 @@ If no violations are found, return an empty array [].`;
   }
   
   async *getViolationDetailsStream(context: string, violation: ViolationAlert): AsyncGenerator<{ text: string }> {
-    if (!this.isInitialized) {
-      throw new Error('AI Service is not initialized. Please check your API Key.');
+    if (!this.isReady(true)) {
+      yield { text: 'ERROR: Deepseek API Key is not set. Please add it in the Settings panel.' };
+      return;
     }
     
     const systemPrompt = `You are an expert paralegal specializing in South Carolina employment law, with a deep focus on Walmart's corporate policies (especially regarding leave of absence and insurance benefits) and Sedgwick's claims administration policies. You will be provided with a full case file and a specific potential violation that you have previously identified. Your task is to provide a more detailed, in-depth analysis of THIS SPECIFIC violation. Do not repeat the initial explanation, but expand upon it with greater detail.`;
@@ -175,8 +189,9 @@ If no violations are found, return an empty array [].`;
   }
 
   async *generateCaseSummaryStream(context: string): AsyncGenerator<{ text: string }> {
-    if (!this.isInitialized) {
-      throw new Error('AI Service is not initialized. Please check your API Key.');
+    if (!this.isReady(true)) {
+      yield { text: 'ERROR: Deepseek API Key is not set. Please add it in the Settings panel.' };
+      return;
     }
 
     const systemPrompt = `You are an expert paralegal specializing in South Carolina employment law. Your task is to generate a concise, professional summary of the provided case file, viewing it through the lens of potential Walmart and Sedgwick policy violations, particularly concerning leave of absence and insurance. The summary should be a single, well-written paragraph. It should highlight the key facts, the primary legal issues (like potential FMLA or ADA violations), and the current status of the case. Do not use markdown or lists; provide a clean paragraph of text.`;
@@ -215,8 +230,9 @@ If no violations are found, return an empty array [].`;
   }
 
   async *sendMessageStream(context: string, prompt: string): AsyncGenerator<{ text: string }> {
-    if (!this.isInitialized) {
-      throw new Error('AI Service is not initialized. Please check your API Key.');
+    if (!this.isReady(true)) {
+      yield { text: 'ERROR: Deepseek API Key is not set. Please add it in the Settings panel.' };
+      return;
     }
     
     const systemPrompt = `You are an expert paralegal specializing in South Carolina employment law, with deep knowledge of Walmart's corporate policies (including leave of absence, accommodation, and insurance benefits like policy IDC 8980) and Sedgwick's insurance and claims administration policies. You will be provided with a complete case file, including core details, a master timeline, the full text of relevant documents, action trackers, and damage calculations. Your task is to analyze this comprehensive data to identify potential legal and policy violations and to suggest actionable steps. Always cite specific laws, policy sections, or document names when possible. Be professional, objective, and informative. Structure your responses clearly using markdown for readability.`;

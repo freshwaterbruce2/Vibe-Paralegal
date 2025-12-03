@@ -29,6 +29,10 @@ export class FileAnalyzerComponent implements OnDestroy {
   
   private mediaStream = signal<MediaStream | null>(null);
 
+  // State for document naming modal
+  isNamingDocument = signal(false);
+  newDocumentName = signal('');
+
   ngOnDestroy() {
     this.stopCamera();
   }
@@ -116,20 +120,38 @@ export class FileAnalyzerComponent implements OnDestroy {
     }
   }
 
-  addTextToDocuments() {
-    const text = this.extractedText();
-    if (!text.trim()) {
+  promptForDocumentName() {
+    if (!this.extractedText().trim()) {
       this.notificationService.addToast('Empty Content', 'Cannot add an empty document.', 'error');
       return;
     }
+    const suggestedName = `Scanned Document - ${new Date().toLocaleDateString()}.txt`;
+    this.newDocumentName.set(suggestedName);
+    this.isNamingDocument.set(true);
+  }
+
+  cancelNaming() {
+    this.isNamingDocument.set(false);
+    this.newDocumentName.set('');
+  }
+
+  confirmAddDocument() {
+    const name = this.newDocumentName().trim();
+    if (!name) {
+      this.notificationService.addToast('Invalid Name', 'Document name cannot be empty.', 'error');
+      return;
+    }
+
     const newDoc: CaseDocument = {
       id: `doc_analyzed_${Date.now()}`,
-      name: `Scanned Document - ${new Date().toLocaleString()}.txt`,
-      content: text,
+      name: name,
+      content: this.extractedText(),
       uploaded: new Date().toLocaleDateString(),
     };
     this.caseDataService.documents.update(docs => [...docs, newDoc]);
-    this.notificationService.addToast('Success', 'Extracted text has been added to your case documents.', 'success');
+    this.notificationService.addToast('Success', `Document "${name}" has been added to your case files.`, 'success');
+    
+    this.cancelNaming();
     this.reset();
   }
 
@@ -145,5 +167,10 @@ export class FileAnalyzerComponent implements OnDestroy {
   handleExtractedTextInput(event: Event) {
     const textarea = event.target as HTMLTextAreaElement;
     this.extractedText.set(textarea.value);
+  }
+
+  handleNewDocumentNameInput(event: Event) {
+    const input = event.target as HTMLInputElement;
+    this.newDocumentName.set(input.value);
   }
 }

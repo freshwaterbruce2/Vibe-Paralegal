@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, inject, signal, WritableSignal, eff
 import { CommonModule } from '@angular/common';
 import { CaseDataService } from './services/case-data.service';
 import { NotificationService } from './services/notification.service';
+import { AiService } from './services/ai.service';
 import { ActiveTab } from './models';
 
 // Import all new feature components
@@ -39,6 +40,7 @@ import { FileAnalyzerComponent } from './components/file-analyzer/file-analyzer.
 export class AppComponent {
   caseDataService = inject(CaseDataService);
   notificationService = inject(NotificationService);
+  aiService = inject(AiService);
   
   // --- UI STATE SIGNALS ---
   activeTab: WritableSignal<ActiveTab> = signal('details');
@@ -48,13 +50,20 @@ export class AppComponent {
   userEmail = signal('');
   notifyOnDeadlines = signal(true);
   notifyOnViolations = signal(true);
+  deepseekApiKey = signal('');
 
   constructor() {
     this.loadSettingsFromLocalStorage();
     this.checkDeadlinesOnLoad();
+    
     // Auto-save settings changes to local storage
     effect(() => {
       this.saveSettingsToLocalStorage();
+    });
+
+    // Automatically update the AI service when the API key changes
+    effect(() => {
+      this.aiService.setApiKey(this.deepseekApiKey());
     });
   }
 
@@ -67,15 +76,14 @@ export class AppComponent {
     this.isSettingsOpen.update(open => !open);
   }
 
-  handleSettingsInput(field: 'userEmail' | 'notifyOnDeadlines' | 'notifyOnViolations', event: Event) {
+  handleSettingsInput(field: 'userEmail' | 'notifyOnDeadlines' | 'notifyOnViolations' | 'deepseekApiKey', event: Event) {
     const input = event.target as HTMLInputElement;
-    if (field === 'userEmail') {
-      this.userEmail.set(input.value);
+    if (field === 'userEmail' || field === 'deepseekApiKey') {
+      const signal = this[field];
+      (signal as WritableSignal<string>).set(input.value);
     } else {
       const signal = this[field];
-      if (typeof signal === 'function' && 'set' in signal) {
-        (signal as WritableSignal<boolean>).set(input.checked);
-      }
+      (signal as WritableSignal<boolean>).set(input.checked);
     }
   }
 
@@ -91,7 +99,7 @@ export class AppComponent {
         deadlineCalendar: this.caseDataService.deadlineCalendar(),
         damageCalculator: this.caseDataService.damageCalculator(),
         documents: this.caseDataService.documents(),
-        violationAlerts: this.caseDataService.violationAlerts()?.map(({ isExpanding, detailedExplanation, ...rest }) => rest), // Don't save transient state
+        violationAlerts: this.caseDataService.violationAlerts()?.map(({ isExpanding, detailedExplanation, showInitialDetails, detailSearchQuery, ...rest }) => rest), // Don't save transient state
         chatHistory: this.caseDataService.messages(),
       };
 
@@ -117,7 +125,8 @@ export class AppComponent {
        const settings = {
          userEmail: this.userEmail(),
          notifyOnDeadlines: this.notifyOnDeadlines(),
-         notifyOnViolations: this.notifyOnViolations()
+         notifyOnViolations: this.notifyOnViolations(),
+         deepseekApiKey: this.deepseekApiKey()
        };
        localStorage.setItem('caseAppSettings', JSON.stringify(settings));
      } catch (e) {
@@ -133,6 +142,7 @@ export class AppComponent {
             this.userEmail.set(settings.userEmail || '');
             this.notifyOnDeadlines.set(settings.notifyOnDeadlines !== false); // default true
             this.notifyOnViolations.set(settings.notifyOnViolations !== false); // default true
+            this.deepseekApiKey.set(settings.deepseekApiKey || '');
         }
       } catch (e) {
         console.error("Failed to load settings from local storage", e);
