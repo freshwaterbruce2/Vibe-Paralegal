@@ -1,0 +1,33 @@
+# Auto-label PRs based on file changes
+
+'documentation':
+  - '**/*.md'
+  - 'docs/**/*'
+
+'dependencies':
+  - 'package.json'
+  - 'package-lock.json'
+
+'ci/cd':
+  - '.github/workflows/**'
+  - '.github/**'
+
+'testing':
+  - '**/*.spec.ts'
+  - '**/*.test.ts'
+  - '**/test-setup.ts'
+  - 'vitest.config.ts'
+
+'frontend':
+  - 'src/components/**'
+  - 'src/**/*.html'
+  - 'src/**/*.css'
+
+'services':
+  - 'src/services/**'
+
+'automation':
+  - 'scripts/**'
+  - '.husky/**'
+  - 'eslint.config.js'
+  - '.prettierrc'
