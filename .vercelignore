@@ -1,6 +1,0 @@
-node_modules
-.angular
-coverage
-*.log
-.env.local
-.env.*.local
