@@ -1,0 +1,47 @@
+[
+  {
+    "name": "automated",
+    "color": "0E8A16",
+    "description": "Automated pull requests from bots and automation tools"
+  },
+  {
+    "name": "dependencies",
+    "color": "0366D6",
+    "description": "Pull requests that update a dependency file"
+  },
+  {
+    "name": "github-actions",
+    "color": "000000",
+    "description": "Pull requests that update GitHub Actions workflows"
+  },
+  {
+    "name": "documentation",
+    "color": "0075CA",
+    "description": "Improvements or additions to documentation"
+  },
+  {
+    "name": "ci/cd",
+    "color": "D4C5F9",
+    "description": "Changes to CI/CD configuration and workflows"
+  },
+  {
+    "name": "testing",
+    "color": "FBCA04",
+    "description": "Changes to tests and testing infrastructure"
+  },
+  {
+    "name": "frontend",
+    "color": "D93F0B",
+    "description": "Frontend changes (components, styles, templates)"
+  },
+  {
+    "name": "services",
+    "color": "1D76DB",
+    "description": "Changes to service layer code"
+  },
+  {
+    "name": "automation",
+    "color": "BFD4F2",
+    "description": "Changes to automation scripts and tools"
+  }
+]
